@@ -27,6 +27,9 @@ font pango:monospace 8
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
+# Start dunst notification manager
+exec --no-startup-id dunst -config /home/favre49/.config/dunst/dunstrc
+
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
@@ -237,8 +240,7 @@ client.unfocused        #8b3d88 #8b3d88 #888888 #8b3d88   #8b3d88
 client.background       #ffffff
 
 # >>> Network Shortcuts <<< #
-bindsym F1 exec --no-startup-id w3m -post - https://fw.bits-pilani.ac.in:8090/login.xml<<<'mode=191&username=f20180193&password=A7PS01932609%23&a=$(date +%s)&producttype=0'
-bindsym F2 exec --no-startup-id w3m -post - https://fw.bits-pilani.ac.in:8090/login.xml<<<'mode=193&username=f20180193&password=2018A7PS01932609#&a=$(date +%s)&producttype=0&state=signed_in'
+bindsym F1 exec --no-startup-id /home/favre49/Scripts/captive_portal_login.sh
 
 # >>> Important shortcuts <<<
 bindsym $mod+Return exec --no-startup-id kitty
