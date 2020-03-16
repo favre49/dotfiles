@@ -252,4 +252,3 @@ bindsym Mod2+KP_1 exec --no-startup-id firefox
 bindsym Mod2+KP_2 exec --no-startup-id code
 bindsym Mod2+KP_3 exec --no-startup-id kitty sh ranger
 bindsym Mod2+KP_4 exec --no-startup-id linuxdcpp
-
