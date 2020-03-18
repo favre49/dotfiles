@@ -1,5 +1,9 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =3
+let g:netrw_dirhistcnt =7
+let g:netrw_dirhist_7='/home/favre49/.config/rofi'
+let g:netrw_dirhist_6='/home/favre49/.config/i3'
+let g:netrw_dirhist_5='/home/favre49/.config/bspwm'
+let g:netrw_dirhist_4='/home/favre49/.config/i3'
 let g:netrw_dirhist_3='/home/favre49'
 let g:netrw_dirhist_2='/home/favre49/Compete'
 let g:netrw_dirhist_1='/etc/X11/xorg.conf.d'

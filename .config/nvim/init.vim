@@ -1,11 +1,13 @@
 call plug#begin('~/.vim/plugged')
-Plug 'https://github.com/Townk/vim-autoclose.git'
+Plug 'preservim/nerdcommenter'
+Plug 'raimondi/delimitmate'
+Plug 'preservim/nerdtree'
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
 call plug#end()
 
 set tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
 set number
 
-map <F11> :!g++ q.cpp <ENTER>
-map <F12> :!./a.out < input <ENTER>
-map <F10> :w<ENTER>
-map <F9> :!cat input<ENTER>
+map <F2> :NERDTreeToggle<CR>
+map <F11> :!g++ q.cpp 2> error<CR>
+map <F12> :!./a.out < input > output 2> error<CR>
