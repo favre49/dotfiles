@@ -1,0 +1,114 @@
+#
+# Main Programs
+#
+
+# Terminal Emulator
+super + Return
+	kitty
+
+# Firefox
+super + f
+        firefox
+
+# VSCode
+super + c
+        code
+
+# File Manager
+super + e
+        kitty sh ranger
+
+# DC++
+super + l
+        linuxdcpp
+
+#
+# Utilities
+#
+
+# Screenshot
+Print
+        scrot -e 'mv $f /home/favre49/Pictures/Screenshots'
+
+# Increase Volume
+XF86AudioRaiseVolume
+        pactl set-sink-volume @DEFAULT_SINK@ +10%
+
+# Decrease Volume
+XF86AudioLowerVolume
+        pactl set-sink-volume @DEFAULT_SINK@ -10%
+
+# Mute Volume
+XF86AudioMute
+        pactl set-sink-mute @DEFAULT_SINK@ toggle
+
+# Mute Microphone
+XF86AudioMicMute
+        pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Increase brightness
+XF86MonBrightnessUp
+        xbacklight -inc 10
+
+# Decrease brightness
+XF86MonBrightnessDown
+        xbacklight -dec 10
+
+#
+# Scripts
+#
+
+# Power Menu
+super + Escape
+        /home/favre49/.config/rofi/scripts/power.sh
+
+# Captive Portal Auto-Login
+F1
+        /home/favre49/Scripts/captive_portal_login.sh
+
+# Application Launcher
+super + d
+        rofi -show drun &
+
+#
+# BSPWM-related shortcuts
+#
+
+# >>> Node Shortcuts <<<
+
+# Close currently focused node
+super + {_,shift+}q
+        bspc node -{c,k}
+
+
+# Focus node in given direction
+super + {Left,Up,Down,Right}
+        bspc node -f {west,north,south,east}
+
+# Swap node in given direction
+super + shift + {Left,Up,Down,Right}
+        bspc node -s {west,north,south,east}
+
+# Switch to last active node
+super + grave
+        bspc node -f last
+
+# Make node float/tile
+super + space
+        bspc node -t ~floating
+
+# >>> Desktop Shortcuts <<<
+
+# Change focused desktop
+super + {1-9,0}
+        bspc desktop -f {I,II,III,IV,V,VI,VII,VIII,IX,X}
+
+# Move node to desktop
+super + shift + {1-9,0}
+        bspc node -d {I,II,III,IV,V,VI,VII,VIII,IX,X}
+
+# Switch to last active desktop
+alt + grave
+        bspc desktop -f last
+
+
