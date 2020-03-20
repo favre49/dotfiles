@@ -80,7 +80,6 @@ super + d
 super + {_,shift+}q
         bspc node -{c,k}
 
-
 # Focus node in given direction
 super + {Left,Up,Down,Right}
         bspc node -f {west,north,south,east}
@@ -95,7 +94,7 @@ super + grave
 
 # Make node float/tile
 super + space
-        bspc node -t ~floating
+        bspc node -t floating
 
 # >>> Desktop Shortcuts <<<
 
