@@ -38,6 +38,14 @@ let g:vimtex_compiler_latexmk = {
 " For writing
 Plug 'junegunn/goyo.vim'
 
+" Snippets
+Plug 'SirVer/ultisnips'
+let g:UltiSnipsExpandTrigger="<c-s>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+Plug 'honza/vim-snippets'
+
 call plug#end()
 
 " Tab Behavior.
@@ -75,7 +83,7 @@ set showmatch
 set hlsearch
 
 " Set language
-set spelllang=en_us
+set spelllang=en_gb
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
@@ -98,8 +106,11 @@ nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
 " Turn NERDTree on or off
 map <F2> :NERDTreeToggle<CR>
 
+" Call .md files Markdown files
+autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+
 " If it's a Markdown file, let's load the Markdown keybindings
-autocmd FileType *.md :call Markdown()
+autocmd FileType markdown :call Markdown()
 
 " If it's a LaTex file, let's load the LaTeX keybindings
 autocmd Filetype latex,tex :call LaTeX()
@@ -120,12 +131,10 @@ function Markdown()
     autocmd TextChanged,TextChangedI <buffer> silent update
 
     " Automatically compile markdown files
-    command PandocPDF silent execute "!pandoc % -o %:r.pdf"
-    map <buffer> <leader>m :PandocPDF<CR>
+    noremap <silent> <buffer> <leader>m :!pandoc %:p -o %:r.pdf<CR><CR>
 
     " Open markdown files in zathura
-    command Zathura execute "!zathura %:r.pdf"
-    map <buffer> <leader>r :Zathura<CR>
+    noremap <silent> <buffer> <leader>r :!zathura %:r.pdf &<CR><CR>
 endfunction
 
 " Keybindings for LaTex Note-taking
