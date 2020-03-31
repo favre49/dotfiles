@@ -64,7 +64,7 @@ super + Escape
 
 # Captive Portal Auto-Login
 F1
-        /home/favre49/Scripts/captive_portal_login.sh
+        /home/favre49/.scripts/captive_portal_login.sh
 
 # Application Launcher
 super + d
