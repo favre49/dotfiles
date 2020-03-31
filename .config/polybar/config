@@ -54,7 +54,7 @@ font-3 = SauceCodePro Nerd Font:style=Regular:pixelsize=8
 
 modules-left = bspwm
 modules-center = date
-modules-right = pulseaudio wlan battery-hearts
+modules-right = mail pulseaudio wlan battery-hearts
 
 ;tray-position = right
 ;tray-padding = 2
@@ -146,6 +146,14 @@ type = custom/script
 exec = ~/.config/polybar/indicate_battery.sh
 
 format-foreground = #dc143c
+format-padding = 2
+
+[module/mail]
+type = custom/script
+
+exec = ~/.config/polybar/scripts/mail.sh
+
+format-foreground = #c0c0c0
 format-padding = 2
 
 [settings]
