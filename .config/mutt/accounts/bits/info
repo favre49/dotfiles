@@ -1,0 +1,16 @@
+unmailboxes *
+source "gpg -dq $HOME/.config/mutt/accounts/bits/pass.gpg |"
+
+set from                = "Rahul Prabhu <f20180193@pilani.bits-pilani.ac.in>"
+set imap_user           = f20180193@pilani.bits-pilani.ac.in
+set imap_pass           = $my_pass
+set sendmail            = "/usr/bin/msmtp -a bits"
+set sendmail_wait       = 0
+unset record
+
+set header_cache        = ~/.cache/mutt/bits
+set message_cachedir    = ~/.cache/mutt/bits
+
+set virtual_spoolfile   = yes
+set folder              = ~/.mail
+source ~/.bits_mailboxes

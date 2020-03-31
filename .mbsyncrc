@@ -1,0 +1,45 @@
+# --- Personal Account --- #
+IMAPAccount gmail
+Host imap.gmail.com
+User cupertinorp@gmail.com
+PassCmd "gpg -q --for-your-eyes-only --no-tty -d $HOME/.config/mutt/accounts/personal/pass.gpg | awk 'NF>1{print $NF}'"
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-remote
+Account gmail
+
+MaildirStore gmail-local
+Subfolders Verbatim
+Path ~/.mail/gmail/
+Inbox ~/.mail/gmail/Inbox
+
+Channel gmail
+Master :gmail-remote:
+Slave :gmail-local:
+Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail"
+Create Both
+SyncState *
+
+# --- BITS account --- #
+IMAPAccount bits
+Host imap.gmail.com
+User f20180193@pilani.bits-pilani.ac.in
+PassCmd "gpg -q --for-your-eyes-only --no-tty -d $HOME/.config/mutt/accounts/bits/pass.gpg | awk 'NF>1{print $NF}'"
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore bits-remote
+Account bits
+
+MaildirStore bits-local
+Subfolders Verbatim
+Path ~/.mail/bits/
+Inbox ~/.mail/bits/Inbox
+
+Channel bits
+Master :bits-remote:
+Slave :bits-local:
+Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail"
+Create Both
+SyncState *

@@ -1,0 +1,16 @@
+unmailboxes *
+source "gpg -dq $HOME/.config/mutt/accounts/personal/pass.gpg |"
+
+set from                = "Rahul Prabhu <cupertinorp@gmail.com>"
+set imap_user           = cupertinorp@gmail.com
+set imap_pass           = $my_pass
+set sendmail            = "/usr/bin/msmtp -a gmail"
+set sendmail_wait       = 0
+unset record
+
+set header_cache        = ~/.cache/mutt/gmail
+set message_cachedir    = ~/.cache/mutt/gmail
+
+set virtual_spoolfile   = yes
+set folder              = ~/.mail/
+source ~/.mailboxes

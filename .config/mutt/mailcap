@@ -1,0 +1,11 @@
+# Viewing HTML
+text/html; w3m -I %{charset} -T text/html; copiousoutput;
+
+# Viewing PDF
+application/pdf; ~/Scripts/view_attachment.sh %s pdf /usr/bin/zathura
+
+# Viewing images
+image/*; ~/Scripts/view_attachment.sh %s pdf /usr/bin/feh
+
+# Viewing MSOffice stuff
+applications/msword; ~/Scripts/view_attachment.sh %s "-" /usr/bin/libreoffice
