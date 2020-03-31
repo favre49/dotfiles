@@ -92,9 +92,13 @@ super + shift + {Left,Up,Down,Right}
 super + grave
         bspc node -f last
 
-# Make node float/tile
+# Make node float
 super + space
         bspc node -t floating
+
+# Make node tile
+super + shift  + space
+        bspc node -t tiled
 
 # >>> Desktop Shortcuts <<<
 
