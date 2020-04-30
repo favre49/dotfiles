@@ -1,4 +1,4 @@
-" Handle plugins with Vim-Plug.
+"Handle plugins with Vim-Plug.
 call plug#begin('~/.vim/plugged')
 
 " Helps comment quickly.
@@ -11,8 +11,9 @@ Plug 'raimondi/delimitmate'
 Plug 'preservim/nerdtree'
 
 " Autocomplete
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py' }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --system-libclang' }
 let g:ycm_autoclose_preview_window_after_completion = 1
+let g:ycm_global_ycm_extra_conf = '/home/favre49/.vim/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py' 
 
 " A git wrapper so awesome it shouldn't be legal
 Plug 'tpope/vim-fugitive'
@@ -41,8 +42,8 @@ Plug 'junegunn/goyo.vim'
 " Snippets
 Plug 'SirVer/ultisnips'
 let g:UltiSnipsExpandTrigger="<c-s>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsJumpForwardTrigger="<c-j>"
+let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
 Plug 'honza/vim-snippets'
 
@@ -106,11 +107,22 @@ nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
 " Turn NERDTree on or off
 map <F2> :NERDTreeToggle<CR>
 
+" NERDCommenter keymappings
+nmap <C-_> <leader>c<Space>
+vmap <C-_> <leader>c<Space>
+
+" Easy escape
+inoremap jk <Esc>
+inoremap kj <Esc>
+
+" Fast semicolons
+inoremap ;; <C-o>A;
+
 " Call .md files Markdown files
-autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+"autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 
 " If it's a Markdown file, let's load the Markdown keybindings
-autocmd FileType markdown :call Markdown()
+"autocmd FileType markdown :call Markdown()
 
 " If it's a LaTex file, let's load the LaTeX keybindings
 autocmd Filetype latex,tex :call LaTeX()
@@ -126,7 +138,7 @@ endfunction
 " Keybindings for Markdown Note-taking
 function Markdown()
     setlocal spell
-   
+
     " Automatically update on change
     autocmd TextChanged,TextChangedI <buffer> silent update
 
@@ -141,7 +153,7 @@ endfunction
 function LaTeX()
     " Automatically update on change
     autocmd TextChanged,TextChangedI <buffer> silent update
-    
+
     " Spell check
     setlocal spell
 endfunction

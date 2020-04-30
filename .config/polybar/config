@@ -18,7 +18,7 @@
 
 [colors]
 # Transparent background
-background = #000E0E0E
+background = #000e0e0e
 
 # Silver text colour
 foreground = #c0c0c0
@@ -54,7 +54,7 @@ font-3 = SauceCodePro Nerd Font:style=Regular:pixelsize=8
 
 modules-left = bspwm
 modules-center = date
-modules-right = mail pulseaudio wlan battery-hearts
+modules-right = updates-arch-combined mail spotify pulseaudio wlan battery-hearts
 
 ;tray-position = right
 ;tray-padding = 2
@@ -77,25 +77,30 @@ cursor-scroll = ns-resize
 [module/bspwm]
 type = internal/bspwm
 
-label-focused = %name%
-label-focused-background = ${colors.foreground}
-label-focused-foreground = #0e0e0e
+ws-icon-0 = I;
+ws-icon-1 = II;
+ws-icon-2 = III;
+ws-icon-3 = IV;
+ws-icon-4 = V;
+ws-icon-5 = VI;
+ws-icon-6 = VII;
+ws-icon-7 = VIII;
+
+label-focused = %icon%
+label-focused-background = ${colors.background}
+label-focused-foreground = #d7be69
 label-focused-padding = 2
 
-label-occupied = %name%
+label-occupied = %icon%
 label-occupied-padding = 2
 
-label-urgent = %name%!
+label-urgent = %icon%!
 label-urgent-background = ${colors.foreground}
 label-urgent-padding = 2
 
-label-empty = %name%
-; Dumb hack to make labels not exist when empty.
-label-empty-foreground = ${colors.background}
+label-empty = %icon%
+label-empty-foreground = ${colors.foreground}
 label-empty-padding = 2
-
-; Separator in between workspaces
-; label-separator = |
 
 [module/wlan]
 type = internal/network
@@ -104,6 +109,8 @@ interval = 3.0
 
 format-connected = <ramp-signal> <label-connected>
 label-connected = %essid%
+
+format-padding = 1
 
 format-disconnected =
 ;format-disconnected = <label-disconnected>
@@ -143,10 +150,10 @@ label-muted-foreground = #666
 [module/battery-hearts]
 type = custom/script
 
-exec = ~/.config/polybar/indicate_battery.sh
+exec = ~/.config/polybar/scripts/indicate_battery.sh
 
 format-foreground = #dc143c
-format-padding = 2
+format-padding = 1
 
 [module/mail]
 type = custom/script
@@ -154,7 +161,19 @@ type = custom/script
 exec = ~/.config/polybar/scripts/mail.sh
 
 format-foreground = #c0c0c0
-format-padding = 2
+format-padding = 1
+
+[module/spotify]
+type = custom/script
+interval = 1
+format-prefix = " "
+format = <label>
+exec = python ~/.config/polybar/scripts/spotify_status.py -f '{artist}: {song}'
+
+[module/updates-arch-combined]
+type = custom/script
+exec = ~/.config/polybar/scripts/updates-arch-combined.sh
+interval = 600
 
 [settings]
 screenchange-reload = true
