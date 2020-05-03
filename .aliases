@@ -1,6 +1,6 @@
 # Editor aliases
 alias vi='nvim'
-alias svi='sudo nvim'
+alias svi='sudoedit'
 alias edit='nvim'
 
 # Dotfile repo git command
