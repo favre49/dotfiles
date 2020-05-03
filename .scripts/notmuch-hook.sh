@@ -1,7 +1,13 @@
 #!/bin/bash
+
+#####################################################
+# Script to update and tag my notmuch mail database #
+#####################################################
+
+# Notmuch checks for new messages
 notmuch new
 
-# See if we have unread messages
+# See if we have new messages
 j=$(notmuch count -- tag:new)
 
 # retag all "new" messages "inbox" and "unread"
@@ -33,7 +39,8 @@ notmuch tag -inbox -unread +sent -- from:f20180193@pilani.bits-pilani.ac.in and 
 
 # Notify if we have unread messages
 i=$(notmuch count -- tag:unread)
-if [ $j -gt 0 ] && [$i -gt 0];
+echo "$j"
+if [ $j -gt 0 ] && [ $i -gt 0 ];
 then
     dunstify "You have $i unread mail"
 fi

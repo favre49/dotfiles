@@ -1,3 +1,8 @@
+##########################################################################
+# Script that makes it easier to check the resolution of wallpapers from #
+# wallpaper dumps and choose the ones I like                             #
+##########################################################################
+
 src="/run/media/favre49/WinData/Downloads/DC/Wallpapers/Untested/*"
 dest="/run/media/favre49/WinData/Downloads/DC/Wallpapers/Validated"
 
