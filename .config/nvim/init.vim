@@ -18,12 +18,9 @@ let g:ycm_global_ycm_extra_conf = '/home/favre49/.vim/plugged/YouCompleteMe/thir
 " A git wrapper so awesome it shouldn't be legal
 Plug 'tpope/vim-fugitive'
 
-" Better searching
-Plug 'mileszs/ack.vim'
-
-" Markdown support
-Plug 'vim-pandoc/vim-pandoc'
-Plug 'vim-pandoc/vim-pandoc-syntax'
+" Fuzzy searching.
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 
 " LaTeX support
 Plug 'lervag/vimtex'
@@ -47,6 +44,19 @@ let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
 Plug 'honza/vim-snippets'
 
+" Themes
+Plug 'tomasiser/vim-code-dark'
+Plug 'vim-airline/vim-airline'
+let g:airline_theme = 'codedark'
+
+" Linting for JS
+Plug 'dense-analysis/ale'
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'javascript': ['eslint'],
+\   'c': [],
+\   'c++': [],
+\}
 call plug#end()
 
 " Tab Behavior.
@@ -67,6 +77,7 @@ set visualbell
 set ttyfast
 set backspace=indent,eol,start
 set laststatus=2
+set number
 set relativenumber
 set ruler
 
@@ -85,6 +96,10 @@ set hlsearch
 
 " Set language
 set spelllang=en_gb
+
+" Set theme
+syntax on
+colorscheme codedark
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
@@ -117,6 +132,9 @@ inoremap kj <Esc>
 
 " Fast semicolons
 inoremap ;; <C-o>A;
+
+" Setup JS Linter
+nmap <leader>d <Plug>(ale_fix)
 
 " Call .md files Markdown files
 "autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
