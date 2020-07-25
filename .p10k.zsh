@@ -177,7 +177,7 @@
   fi
 
   # Default background color.
-  typeset -g POWERLEVEL9K_BACKGROUND=234
+  typeset -g POWERLEVEL9K_BACKGROUND=#44475a
 
   # Separator between same-color segments on the left.
   typeset -g POWERLEVEL9K_LEFT_SUBSEGMENT_SEPARATOR='%242F\uE0B1'
@@ -200,7 +200,7 @@
 
   #################################[ os_icon: os identifier ]##################################
   # OS identifier color.
-  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=255
+  typeset -g POWERLEVEL9K_OS_ICON_FOREGROUND=#f8f8f2
   # Make the icon bold.
   typeset -g POWERLEVEL9K_OS_ICON_CONTENT_EXPANSION='%B${P9K_CONTENT// }'
 
@@ -229,7 +229,7 @@
 
   ##################################[ dir: current directory ]##################################
   # Default current directory color.
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=31
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=#bd93f9
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original.
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
@@ -239,7 +239,7 @@
   typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=103
   # Color of the anchor directory segments. Anchor segments are never shortened. The first
   # segment is always an anchor.
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=39
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=#BD93F9
   # Display anchor directory segments in bold.
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=true
   # Don't shorten directories that contain any of these files. They are anchors.
