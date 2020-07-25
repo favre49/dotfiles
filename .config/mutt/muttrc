@@ -2,6 +2,9 @@ source "~/.config/mutt/accounts/personal/info"
 
 unset imap_passive
 
+# Create header cache
+set header_cache=~/.mutt_cache
+
 # Keep the IMAP connection alive by polling intermittently (time in seconds).
 set imap_keepalive = 300
 
@@ -31,6 +34,10 @@ macro index \Cr "T~U<enter><tag-prefix><clear-flag>N<untag-pattern>.<enter>" "ma
 # Saner copy/move dialogs
 macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
 macro index M "<save-message>?<toggle-mailboxes>" "move a message to a mailbox"
+
+# Some notmuch bindings
+macro index A "<modify-labels>+archived -unread -inbox\\n" "Archive message"
+macro index \\\\ "<vfolder-from-query>" "Search mailbox"
 
 # Sidebar Navigation
 bind index,pager <down>   sidebar-next
@@ -74,11 +81,12 @@ set fcc_attach
 unset mime_forward
 set forward_format = "Fwd: %s"
 set forward_decode
-set attribution = "On %d, %n wrote"
+#set attribution = "On %d, %n wrote"
 set reply_to
 set reverse_name
 set include
 set forward_quote
+set text_flowed
 set editor = "nvim"
 
 # Drafts settings
@@ -86,8 +94,14 @@ bind compose p postpone-message
 bind index p recall-message
 
 # Colors
-source ~/.config/mutt/colors
+source ~/.config/mutt/dracula.muttrc
 
 # Switch accounts
 macro index <f3> '<sync-mailbox><enter-command>source ~/.config/mutt/accounts/personal/info<enter><change-folder>!<enter><right>'
 macro index <f4> '<sync-mailbox><enter-command>source ~/.config/mutt/accounts/bits/info<enter><change-folder>!<enter><right>'
+
+## Abook
+set query_command= "abook --mutt-query '%s'"
+macro index,pager  a "<pipe-message>abook --add-email-quiet<return>" "Add this sender to Abook"
+bind editor        <Tab> complete-query
+

@@ -7,6 +7,10 @@ Plug 'preservim/nerdcommenter'
 " Need that auto-pairing.
 Plug 'raimondi/delimitmate'
 
+" Fancy brackets
+Plug 'luochen1990/rainbow'
+let g:rainbow_active = 1
+
 " Extremely helpful file view
 Plug 'preservim/nerdtree'
 
@@ -46,8 +50,9 @@ Plug 'honza/vim-snippets'
 
 " Themes
 Plug 'tomasiser/vim-code-dark'
+Plug 'dracula/vim',{'as':'dracula'}
 Plug 'vim-airline/vim-airline'
-let g:airline_theme = 'codedark'
+let g:airline_theme = 'dracula'
 
 " Linting for JS
 Plug 'dense-analysis/ale'
@@ -60,10 +65,10 @@ let g:ale_fixers = {
 call plug#end()
 
 " Tab Behavior.
-set tabstop=8
+set tabstop=2
 set softtabstop=0
 set expandtab
-set shiftwidth=4
+set shiftwidth=2
 set smarttab
 
 " Changes I can't live without.
@@ -99,7 +104,8 @@ set spelllang=en_gb
 
 " Set theme
 syntax on
-colorscheme codedark
+set termguicolors
+colorscheme dracula
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
@@ -136,6 +142,13 @@ inoremap ;; <C-o>A;
 " Setup JS Linter
 nmap <leader>d <Plug>(ale_fix)
 
+" Better window switching.
+nnoremap <C-J> <C-W>j
+nnoremap <C-K> <C-W>k
+nnoremap <C-L> <C-W>l
+nnoremap <C-H> <C-W>h
+
+
 " Call .md files Markdown files
 "autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 
@@ -147,6 +160,7 @@ autocmd Filetype latex,tex :call LaTeX()
 
 " Keybindings for competitive programming
 function Compete()
+    "let $CXXFLAGS = '-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -fsanitize=address -fsanitize=undefined -fno-sanitize-recover'
     set makeprg=make\ %<
     noremap <buffer> <leader>m :make<CR>:botright copen<CR><CR>
     noremap <buffer> <leader>r :!%:p:r < input<cr>

@@ -1,0 +1,7 @@
+theme:
+  active: "189,147,249"
+  selected: "189,147,249"
+  text: "248, 248, 242"
+  hovered: "98,114,164"
+  playbar_progress: "98,114,164"
+  playbar_text: "189,147,249"
