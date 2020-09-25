@@ -37,6 +37,10 @@ let g:vimtex_compiler_latexmk = {
     \ 'build_dir' : 'output',
 \}
 
+" Markdown support
+Plug 'vim-pandoc/vim-pandoc'
+Plug 'vim-pandoc/vim-pandoc-syntax'
+
 " For writing
 Plug 'junegunn/goyo.vim'
 
@@ -147,6 +151,9 @@ nnoremap <C-J> <C-W>j
 nnoremap <C-K> <C-W>k
 nnoremap <C-L> <C-W>l
 nnoremap <C-H> <C-W>h
+
+" Enable mouse support
+set mouse=nv
 
 
 " Call .md files Markdown files
