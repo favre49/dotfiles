@@ -137,13 +137,13 @@ endsnippet
 snippet nck
 const int N = 2e5 + 7;
 
-mod_int fact[maxN], invfact[maxN], inv[maxN];
+mod_int fact[N], invfact[N], inv[N];
 
 void init() {
   inv[1] = invfact[1] = invfact[0] = fact[0] = fact[1] = 1;
-  for (int i = 2; i < maxN; i++) {
+  for (int i = 2; i < N; i++) {
     fact[i] = fact[i - 1]*i;
-    inv[i] = inv[mod % i]*(mod - mod / i);
+    inv[i] = inv[MOD % i]*(MOD - MOD / i);
     invfact[i] = invfact[i - 1]*inv[i];
   }
 }
@@ -151,7 +151,7 @@ void init() {
 mod_int cnk(int n, int k) {
   if (n < k) return 0;
   if (n < 0 || k < 0) return 0;
-  return fact[n]*(invfact[k]*invfact[n - k]));
+  return fact[n]*(invfact[k]*invfact[n - k]);
 }
 endsnippet
 
@@ -303,38 +303,55 @@ vi prefix_func(string s)
 endsnippet
 
 snippet BIT
-
-const int N = 1e5+7;
-int BIT[N];
-
-// Increase number indexed at x by val
-void update(int x, int val)
+struct BIT
 {
+  vi t;
+  int tn;
+
+  BIT(int _n)
+  {
+    assert(_n > 0);
+    tn = _n;
+    t = vi(tn+1,0);
+  }
+
+  void update(int x, int val)
+  {
     x++;
-    while (x <= N)
+    while (x <= tn)
     {
-        BIT[x] += val;
-        x += (x & -x);
+      t[x] += val;
+      x += (x&-x);
     }
-}
+  }
 
-// Find sum of range [0...x]
-int query(int x)
-{
+  // Find sum in [0..x]
+  int query(int x)
+  {
+    assert(x < tn);
     x++;
     int res = 0;
     while (x > 0)
     {
-        res += BIT[x];
-        x -= (x & -x);
+      res += t[x];
+      x -= (x&-x);
     }
     return res;
-}
+  }
 
+  // Find sum in [l..r]
+  int get(int l, int r)
+  {
+    assert(l <= r);
+    if (l==0)
+      return query(r);
+    return query(r)-query(l-1);
+  }
+};
 endsnippet
 
 snippet DSU
-
+const int N = 1e5+7;
 int parent[N], sz[N];
 
 // Create a new set
@@ -361,7 +378,7 @@ void union_sets(int a, int b)
     b = find_set(b);
     if (a != b)
     {
-        if (sz(a) < sz(b))
+        if (sz[a] < sz[b])
 	        swap(a,b);
         parent[b] = a;
         sz[a] += sz[b];
@@ -390,47 +407,163 @@ void sieve()
 endsnippet
 
 snippet segtree
-// Implementation by AI.Cash
-// All the leaves are at n,n+1,...
-// Every segment is of the form [l,r)
+struct S {
+  int x;
 
-const int N = 1e5+7;
-int n;
-int t[2*N];
-
-// Build the tree
-void build()
-{
-  for (int i = n-1; i > 0; i--)
-    t[i] = t[i<<1]+t[i<<1|1];
-}
-
-// Set value at position p
-void modify(int p, int value)
-{
-  for (t[p += n] = value; p > 1; p >>= 1)
-    t[p>>1] = t[p] + t[p^1];
-}
-
-// Query on interval [l,r)
-int query(int l, int r)
-{
-  int res = 0;
-  for (l += n, r += n; l < r; l >>= 1, r >>= 1)
+  // This should be the identity element
+  S()
   {
-    if (l&1)
-      res += t[l++];
-    if (r&1)
-      res += t[--r];
+    x = 0;
   }
-  return res;
+  
+  S(int _x):x(_x){}
+};
+
+S op(S& a, S& b)
+{
+  return {max(a.x,b.x)};
 }
 
+// Predicate for binary search. Must be true for identity.
+bool f(S /*x*/)
+{
+  // Dummy for binary search
+  return true;
+}
+
+struct segtree
+{
+  int _n;
+  vector<S> t;
+  int size;
+  int log;
+
+  segtree(): segtree(0) {}
+
+  segtree(int n = -1)
+  {
+    if (n >= 0)
+      init(n);
+  }
+
+  void init(int n)
+  {
+    _n = n;
+    log = 0;
+    while ((1U<<log) < (unsigned int)(n)) log++;
+    size = 1<<log;
+    t.assign(2*size,S());
+  }
+
+  void build(vector<S> v)
+  {
+    init((int)v.size());
+    assert(_n != 0);
+
+    for (int i = 0; i < _n; i++)
+      t[size+i] = v[i];
+
+    for (int i = size-1; i > 0; i--)
+      t[i] = op(t[2*i],t[2*i+1]);
+  }
+
+  void set(int p, S x)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    t[p] = x;
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  S get(int p)
+  {
+    assert(0 <= p && p < _n);
+    return t[p+size];
+  }
+
+  // Find result for range [l,r)
+  S query (int l, int r)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    S ansl, ansr;
+    l += size;
+    r += size;
+    while (l < r)
+    {
+      if (l&1) ansl = op(ansl,t[l++]);
+      if (r&1) ansr = op(t[--r],ansr);
+      l >>= 1;
+      r >>= 1;
+    }
+    return op(ansl,ansr);
+  }
+
+  /* Binary Search */
+  // Find the maximum value of r such that [l,r) is true
+  int max_right(int l)
+  {
+    assert(0 <= l && l <= _n);
+
+    if (l==_n) return _n;
+    l += size;
+    S sm;
+    do{
+      while (l%2==0)
+        l >>= 1;
+      if (!f(op(sm,t[l])))
+      {
+        while (l < size) {
+          l *= 2;
+          if (f(op(sm,t[l])))
+          {
+            sm = op(sm,t[l]);
+            l++;
+          }
+        }
+        return l - size;
+      }
+      sm = op(sm,t[l]);
+      l++;
+    } while((l&-l) != l);
+    return _n;
+  }
+
+  // This is the minimum l such that [l,r) is true
+  int min_left(int r)
+  {
+    assert(0 <= r && r <= _n);
+    if (r==0)
+      return 0;
+    r += size;
+    S sm;
+    do {
+      r--;
+      while(r>1 && (r%2)) r >>= 1;
+      if (!f(op(t[r],sm)))
+      {
+        while (r < size)
+        {
+          r = (2*r+1);
+          if (f(op(t[r],sm)))
+          {
+            sm = op(t[r],sm);
+            r--;
+          }
+        }
+        return r+1-size;
+      }
+      sm = op(t[r],sm);
+    }
+    while((r & -r) != r);
+    return 0;
+  }
+};
 endsnippet
 
 snippet djikstra
 const int N = 1e5+7;
-const int INF = 100000000;
+const int INF = 100000000; // Consider changing to ll
 vpii adj[N];
 int dist[N];
 int pred[N];
@@ -440,9 +573,7 @@ void djikstra(int src)
 {
     fill(dist,dist+n,INF);
     fill(pred,pred+N,-1);
-
     dist[src] = 0;
-    
     priority_queue<pii,vpii,greater<pii>> q;
     q.push({0,src});
     while (!q.empty())
@@ -452,7 +583,6 @@ void djikstra(int src)
         q.pop();
         if (d_v != dist[v])
             continue;
-
         for (auto edge : adj[v])
         {
             int to = edge.f;
@@ -1159,4 +1289,501 @@ vector<int> z_function(string s) {
     }
     return z;
 }
+endsnippet
+
+snippet rollinghash
+// Use mode 1e9+7;
+int tmp = (chrono::high_resolution_clock::now().time_since_epoch().count()%MOD+MOD)%MOD;
+
+pair<mod_int,mod_int> operator+(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f+r.f,l.s+r.s}; }
+
+pair<mod_int,mod_int> operator-(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f-r.f,l.s-r.s}; }
+
+pair<mod_int,mod_int> operator*(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f*r.f,l.s*r.s}; }
+
+pair<mod_int,mod_int> operator*(const pair<mod_int,mod_int>& l, int r) { return {l.f*r,l.s*r}; };
+
+struct hsh
+{
+  string S;
+  vector<pair<mod_int,mod_int>> pows, ipows, cum;
+  pair<mod_int,mod_int> base = {948392576,tmp}, invbase;
+
+  hsh() {}
+  hsh(string s) { gen(s); }
+
+  void gen(string _S)
+  {
+    if (base.s==0)
+      base.s = 1358;
+    invbase = {base.f.inv(),base.s.inv()};
+    S = _S;
+    pows.resize(S.size()), ipows.resize(S.size()), cum.resize(S.size()+1);
+    pows[0] = ipows[0] = {1,1};
+    for (int i = 1; i < (int)S.size(); i++)
+    {
+      pows[i] = pows[i-1]*base;
+      ipows[i] = ipows[i-1]*invbase;
+    }
+
+    for (int i = 0; i < (int)S.size(); i++)
+      cum[i+1] = cum[i] + pows[i]*(int)(S[i]-'a'+1);;
+  }
+
+  // Get the hash of the subtring [l,r]
+  pair<mod_int,mod_int> get(int l, int r)
+  {
+    return ipows[l]*(cum[r+1]-cum[l]);
+  }
+
+  int lcp(hsh& b)
+  {
+    int lo = 0, hi = min(S.size(),b.S.size());
+    while (lo < hi)
+    {
+      int mid = (lo+hi+1)/2;
+      if (cum[mid] == b.cum[mid]) lo = mid;
+      else
+        hi = mid-1;
+    }
+    return lo;
+  }
+};
+endsnippet
+
+snippet lazysegtree
+struct S {
+  int x;
+  int w;
+
+  // This should be the identity element
+  S()
+  {
+    x = 0;
+    w = 1;
+  }
+  
+  S(int _x, int _w):x(_x), w(_w){}
+};
+
+// Paremeters of the function we are applying on the range.
+struct F{
+  int d;
+  // Must be identity
+  F() {d=0;}
+  F(int _d):d(_d){}
+};
+
+// Returns the transform with parameters F and input S
+S mapping(F f, S x)
+{
+  if (f.d==0)
+    return x;
+  return S();
+}
+
+// Returns f o g, which is the composition of them under the operation op
+// It is necessary that f(x) o f(y) = f(x o y)
+F composition(F f, F g)
+{
+  if (f.d==0) return g;
+  return f;
+}
+
+S op(S a, S b)
+{
+  return S(a.x*b.w+b.x,a.w*b.w);
+}
+
+// Predicate for binary search. Must be true for identity.
+bool f(S /*x*/)
+{
+  // Dummy for binary search
+  return true;
+}
+
+struct lazy_segtree
+{
+  int _n;
+  vector<S> t;
+  vector<F> lz;
+  int size;
+  int log;
+
+  lazy_segtree(): lazy_segtree(0) {}
+
+  lazy_segtree(int n = -1)
+  {
+    if (n >= 0)
+      init(n);
+  }
+
+  lazy_segtree(vector<S> v)
+  {
+    build(v);
+  }
+
+  void init(int n)
+  {
+    _n = n;
+    log = 0;
+    while ((1U<<log) < (unsigned int)(n)) log++;
+    size = 1<<log;
+    t.assign(2*size,S());
+    lz = vector<F>(size);
+  }
+
+  void build(vector<S> v)
+  {
+    init((int)v.size());
+    assert(_n != 0);
+
+    for (int i = 0; i < _n; i++)
+      t[size+i] = v[i];
+
+    for (int i = size-1; i > 0; i--)
+      t[i] = op(t[2*i],t[2*i+1]);
+  }
+
+  void all_apply(int k, F f)
+  {
+    t[k] = mapping(f,t[k]);
+    if (k < size) lz[k] = composition(f,lz[k]);
+  }
+
+  void push(int k)
+  {
+    all_apply(2*k,lz[k]);
+    all_apply(2*k+1,lz[k]);
+    lz[k] = F();
+  }
+
+  void set(int p, S x)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    t[p] = x;
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  S get(int p)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    return t[p];
+  }
+
+  // Find result for range [l,r)
+  S query (int l, int r)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    if (l==r) return S();
+    S ansl, ansr;
+    l += size;
+    r += size;
+
+    for (int i = log; i >= 1; i--)
+    {
+      if (((l>>i)<<i) != l) push (l>>i);
+      if (((r>>i)<<i) != r) push (r>>i);
+    }
+
+    while (l < r)
+    {
+      if (l&1) ansl = op(ansl,t[l++]);
+      if (r&1) ansr = op(t[--r],ansr);
+      l >>= 1;
+      r >>= 1;
+    }
+    return op(ansl,ansr);
+  }
+
+  void apply(int p, F f)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    t[p] = mapping(f,t[p]);
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  void apply(int l, int r, F f)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    if (l==r) return;
+
+    l += size;
+    r += size;
+
+    for (int i = log; i >= 1; i--)
+    {
+      if (((l >> i)<<i)!=l) push(l>>i);
+      if (((r >> i)<<i)!=r) push((r-1)>>i);
+    }
+
+    {
+      int l2 = l, r2 = r;
+      while (l < r)
+      {
+        if (l&1) all_apply(l++,f);
+        if (r&1) all_apply(--r,f);
+        l >>= 1;
+        r >>= 1;
+      }
+      l = l2, r = r2;
+    }
+
+    for (int i = 1; i <= log; i++)
+    {
+      if (((l >> i)<<i)!=l) t[l>>i] = op(t[2*(l>>i)],t[2*(l>>i)+1]);
+      if (((r >> i)<<i)!=r) t[(r-1)>>i] = op(t[2*((r-1)>>i)],t[2*((r-1)>>i)+1]);
+    }
+  }
+
+  /* Binary Search */
+  // Find the maximum value of r such that [l,r) is true
+  int max_right(int l)
+  {
+    assert(0 <= l && l <= _n);
+
+    if (l==_n) return _n;
+    l += size;
+    for (int i = log; i >= 1; i--)
+      push(l>>i);
+    S sm;
+    do{
+      while (l%2==0)
+        l >>= 1;
+      if (!f(op(sm,t[l])))
+      {
+        while (l < size) {
+          push(l);
+          l *= 2;
+          if (f(op(sm,t[l])))
+          {
+            sm = op(sm,t[l]);
+            l++;
+          }
+        }
+        return l - size;
+      }
+      sm = op(sm,t[l]);
+      l++;
+    } while((l&-l) != l);
+    return _n;
+  }
+
+  // This is the minimum l such that [l,r) is true
+  int min_left(int r)
+  {
+    assert(0 <= r && r <= _n);
+    if (r==0)
+      return 0;
+    r += size;
+    for (int i = log; i >= 1; i--)
+      push((r-1)<<i);
+    S sm;
+    do {
+      r--;
+      while(r>1 && (r%2)) r >>= 1;
+      if (!f(op(t[r],sm)))
+      {
+        while (r < size)
+        {
+          push(r);
+          r = (2*r+1);
+          if (f(op(t[r],sm)))
+          {
+            sm = op(t[r],sm);
+            r--;
+          }
+        }
+        return r+1-size;
+      }
+      sm = op(t[r],sm);
+    }
+    while((r & -r) != r);
+    return 0;
+  }
+};
+endsnippet
+
+snippet matrix
+template<class T>
+struct Mat{
+  int n,m;
+  vector<vector<T>> d;
+
+  Mat()
+  {
+    n = 0, m = 0;
+  }
+
+  Mat(int _n, int _m): n(_n), m(_m)
+  {
+    d = vector<vector<T>>(n,vector<mod_int>(m));
+  }
+
+  Mat(const vector<vector<T>>& v): Mat((int)v.size(),(int)v[0].size()){
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++)
+        d[i][j] = v[i][j];
+  }
+
+  Mat operator +(Mat other) {
+    assert(n == other.n && m == other.m);
+    Mat res = Mat(n,m);
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        res.d[i][j] = d[i][j] + other.d[i][j];
+      }
+    }
+    return res;
+  }
+
+  Mat operator -(Mat other) {
+    assert(n == other.n && m == other.m);
+    Mat res = Mat(n,m);
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        res.d[i][j] = d[i][j] - other.d[i][j];
+      }
+    }
+    return res;
+  }
+
+  Mat operator *(Mat other) {
+    assert(m == other.n);
+    Mat prod = Mat(n,other.m);
+    for (int i = 0; i < n; i++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        for (int k = 0; k < other.m; k++)
+        {
+          prod.d[i][k] += d[i][j] * other.d[j][k];
+        }
+      }
+    }
+    return prod;
+  }
+
+  Mat operator ^(ll p)
+  {
+    assert(p >= 0);
+    Mat res(n,n), base(*this);
+    for (int i = 0; i < n; i++)
+      res.d[i][i] = 1;
+    for (;p; p /= 2)
+    {
+      if (p&1) res = res*base;
+      base = base*base;
+    }
+    return res;
+  }
+};
+endsnippet
+
+snippet polynomial
+template <typename T>
+struct poly {
+  // The coefficients of the polynomial in increasing order of degree
+  vector<T> a;
+
+  // Constructors
+  poly(){}
+  poly(T _a):a{_a} {}
+  poly(vector<T> t):a(t) {}
+
+  // Operations
+  poly operator += (const poly& t)
+  {
+    a.resize(max(a.size(),t.a.size()));
+    for (int i = 0; i< t.a.size(); i++)
+      a[i] += t.a[i];
+    return *this;
+  }
+
+  poly operator -= (const poly& t)
+  {
+    a.resize(max(a.size(),t.a.size()));
+    for (int i = 0; i< t.a.size(); i++)
+      a[i] -= t.a[i];
+    return *this;
+  }
+
+  // Note: Should I make this FFT? Probably not yet
+  poly operator *= (const poly& t)
+  {
+    vector<T> ans(a.size()+t.a.size()-1);
+    for (int i = 0; i < (int)a.size(); i++)
+      for (int j = 0; j < (int)t.a.size(); j++)
+        ans[i+j] += a[i]*t.a[j];
+    a = ans;
+    return *this;
+  }
+
+  poly operator /= (T d)
+  {
+    for (int i = 0; i < a.size(); i++)
+      a[i] /= d;
+    return *this;
+  }
+
+  T operator () (T x)
+  {
+    T res = 0;
+    T cum = 1;
+    for (int i = 0; i < a.size(); i++)
+    {
+      res += a[i]*cum;
+      cum *= x;
+    }
+    return res;
+  }
+
+  poly operator + (const poly& t) const {return poly(*this) += t;}
+  poly operator - (const poly& t) const {return poly(*this) -= t;}
+  poly operator * (const poly& t) const {return poly(*this) *= t;}
+  poly operator / (T t) const {return poly(*this) /= t;}
+
+  // More operations
+  poly integrate()
+  {
+    vector<T> res = {0};
+    for (int i = 0; i < a.size(); i++)
+    {
+      res.pb(a[i]/T(i+1));
+    }
+    return res;
+  }
+
+  poly deriv()
+  {
+    vector<T> res;
+    for (int i = 1; i < a.size(); i++)
+      res.pb(a[i]*T(i));
+    return res;
+  }
+  
+  T integrate_val(int l, int r)
+  {
+    poly ans = integrate();
+    return ans(r)-ans(l);
+  }
+};
 endsnippet

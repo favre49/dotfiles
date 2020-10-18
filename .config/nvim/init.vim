@@ -53,10 +53,11 @@ let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 Plug 'honza/vim-snippets'
 
 " Themes
-Plug 'tomasiser/vim-code-dark'
-Plug 'dracula/vim',{'as':'dracula'}
+"Plug 'dracula/vim',{'as':'dracula'}
+Plug 'altercation/vim-colors-solarized'
 Plug 'vim-airline/vim-airline'
-let g:airline_theme = 'dracula'
+Plug 'vim-airline/vim-airline-themes'
+"let g:airline_theme = 'solarized'
 
 " Linting for JS
 Plug 'dense-analysis/ale'
@@ -109,7 +110,9 @@ set spelllang=en_gb
 " Set theme
 syntax on
 set termguicolors
-colorscheme dracula
+set background=light
+let g:solarized_termcolors=256
+colorscheme solarized
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
