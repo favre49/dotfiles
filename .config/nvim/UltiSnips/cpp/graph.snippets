@@ -1,0 +1,138 @@
+snippet DSU
+const int N = 1e5+7;
+int parent[N], sz[N];
+
+// Create a new set
+void make_set(int v)
+{
+    parent[v] = v;
+    sz[v] = 1;
+}
+
+// Find the set of v
+int find_set(int v)
+{
+    if (v==parent[v])
+        return v;
+    
+    // Path compression.
+    return parent[v] = find_set(parent[v]);
+}
+
+// Unite two sets 
+void union_sets(int a, int b)
+{
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b)
+    {
+        if (sz[a] < sz[b])
+	        swap(a,b);
+        parent[b] = a;
+        sz[a] += sz[b];
+    }
+}
+endsnippet
+
+snippet floyd
+for (int k = 0; k < n; k++)
+{
+  for (int i = 0; i < n; i++)
+  {
+    for (int j = 0; j < n; j++)
+    {
+	    // Include if graph has negative edges
+      //if (d[i][k] < INT_MAX && d[k][j] < INT_MAX)
+	      d[i][j] = min(d[i][j],d[i][k]+d[k][j])
+	  }
+  }
+}
+endsnippet
+
+snippet tarjan
+// comps stores the number of components, they are 1-indexed.
+// comp stores the component number of any part
+int low[N], dtime[N], dfstime, st[N], _size, comp[N], comps;
+bool inst[N];
+
+void tarjan(int u)
+{
+  low[u] = dtime[u] = ++dfstime;
+  st[_size++] = u;
+  inst[u] = true;
+  for (int v : adj[u])
+  {
+    if (dtime[v]==-1)
+    {
+      tarjan(v);
+      low[u] = min(low[u],low[v]);
+    }
+    else if (inst[v])
+      low[u] = min(low[u],dtime[v]);
+  }
+
+  if (dtime[u] == low[u])
+  {
+    comps++;
+    int v = -1;;
+    do
+    {
+      v = st[--_size];
+      inst[v] = false;
+      comp[v] = comps;
+    }
+    while (u!=v);
+  }
+}
+
+void scc(int n)
+{
+  comps = dfstime = _size = 0;
+  memset(dtime,-1,sizeof(dtime));
+  memset(low,0,sizeof(low));
+  memset(st,0,sizeof(st));
+  memset(comp,0,sizeof(comp));
+  memset(inst,0,sizeof(inst));
+  for (int i = 0; i < n; i++)
+    if (dtime[i]==-1)
+      tarjan(i);
+}
+endsnippet
+
+snippet djikstra
+const int N = 1e5+7;
+const int INF = 100000000; // Consider changing to ll
+vector<pair<int,int>> adj[N];
+int dist[N];
+int pred[N];
+int n,m;
+
+void djikstra(int src)
+{
+    fill(dist,dist+n,INF);
+    fill(pred,pred+N,-1);
+    dist[src] = 0;
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> q;
+    q.push({0,src});
+    while (!q.empty())
+    {
+        int v = q.top().second;
+        int d_v = q.top().first;
+        q.pop();
+        if (d_v != dist[v])
+            continue;
+        for (auto edge : adj[v])
+        {
+            int to = edge.first;
+            int len = edge.second;
+            
+            if (dist[v] + len < dist[to])
+            {
+                dist[to] = dist[v] + len;
+                pred[to] = v;
+                q.push({dist[to],to});
+            }
+        }
+    }
+}
+endsnippet

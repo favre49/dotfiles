@@ -15,9 +15,11 @@ let g:rainbow_active = 1
 Plug 'preservim/nerdtree'
 
 " Autocomplete
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --system-libclang' }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clangd-completer --system-libclang' }
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_global_ycm_extra_conf = '/home/favre49/.vim/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py' 
+let g:ycm_confirm_extra_conf = 0
+Plug 'rdnetto/YCM-Generator', { 'branch' : 'stable' }
 
 " A git wrapper so awesome it shouldn't be legal
 Plug 'tpope/vim-fugitive'
@@ -50,14 +52,12 @@ let g:UltiSnipsExpandTrigger="<c-s>"
 let g:UltiSnipsJumpForwardTrigger="<c-j>"
 let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
-Plug 'honza/vim-snippets'
+"Plug 'honza/vim-snippets'
 
 " Themes
-"Plug 'dracula/vim',{'as':'dracula'}
-Plug 'altercation/vim-colors-solarized'
+Plug 'lifepillar/vim-solarized8'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-"let g:airline_theme = 'solarized'
 
 " Linting for JS
 Plug 'dense-analysis/ale'
@@ -67,6 +67,12 @@ let g:ale_fixers = {
 \   'c': [],
 \   'c++': [],
 \}
+
+" Local vimrc
+Plug 'embear/vim-localvimrc'
+let g:localvimrc_sandbox = 0 " This is technically not good, but it doesn't support makeprg
+let g:localvimrc_whitelist = ['/home/favre49/Compete/*', '/home/favre49/TempCompete/*']
+
 call plug#end()
 
 " Tab Behavior.
@@ -110,9 +116,7 @@ set spelllang=en_gb
 " Set theme
 syntax on
 set termguicolors
-set background=light
-let g:solarized_termcolors=256
-colorscheme solarized
+colorscheme solarized8
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
@@ -158,24 +162,14 @@ nnoremap <C-H> <C-W>h
 " Enable mouse support
 set mouse=nv
 
-
 " Call .md files Markdown files
-"autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
+autocmd BufNewFile,BufFilePre,BufRead *.md set filetype=markdown
 
 " If it's a Markdown file, let's load the Markdown keybindings
-"autocmd FileType markdown :call Markdown()
+autocmd FileType markdown :call Markdown()
 
 " If it's a LaTex file, let's load the LaTeX keybindings
 autocmd Filetype latex,tex :call LaTeX()
-
-" Keybindings for competitive programming
-function Compete()
-    "let $CXXFLAGS = '-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -fsanitize=address -fsanitize=undefined -fno-sanitize-recover'
-    set makeprg=make\ %<
-    noremap <buffer> <leader>m :make<CR>:botright copen<CR><CR>
-    noremap <buffer> <leader>r :!%:p:r < input<cr>
-    echom "Set competitive programming keybinds. Good luck!"
-endfunction
 
 " Keybindings for Markdown Note-taking
 function Markdown()

@@ -1,0 +1,155 @@
+snippet zfunction
+vector<int> z_function(string s) {
+    int n = (int) s.length();
+    vector<int> z(n);
+    for (int i = 1, l = 0, r = 0; i < n; ++i) {
+        if (i <= r)
+            z[i] = min (r - i + 1, z[i - l]);
+        while (i + z[i] < n && s[z[i]] == s[i + z[i]])
+            ++z[i];
+        if (i + z[i] - 1 > r)
+            l = i, r = i + z[i] - 1;
+    }
+    return z;
+}
+endsnippet
+
+snippet prefixfunc
+// Finds longest prefix of [0..i] such that it is also a suffix of [0..i]
+vector<int> prefix_func(string s)
+{
+  int n = (int)s.length();
+  vector<int> pi(n);
+  for (int i = 1; i < n; i++)
+  {
+    int j = pi[i-1];
+    while (j > 0 && s[i] != s[j])
+	    j = pi[j-1];
+    if (s[i] == s[j])
+	    j++;
+    pi[i] = j;
+  }
+  return pi;
+}
+endsnippet
+
+snippet rollinghash
+// Use mod 1e9+7;
+int tmp = (chrono::high_resolution_clock::now().time_since_epoch().count()%MOD+MOD)%MOD;
+
+pair<mod_int,mod_int> operator+(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f+r.f,l.s+r.s}; }
+
+pair<mod_int,mod_int> operator-(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f-r.f,l.s-r.s}; }
+
+pair<mod_int,mod_int> operator*(const pair<mod_int,mod_int>& l, const pair<mod_int,mod_int> r)
+{  return {l.f*r.f,l.s*r.s}; }
+
+pair<mod_int,mod_int> operator*(const pair<mod_int,mod_int>& l, int r) { return {l.f*r,l.s*r}; };
+
+struct hsh
+{
+  string S;
+  vector<pair<mod_int,mod_int>> pows, ipows, cum;
+  pair<mod_int,mod_int> base = {948392576,tmp}, invbase;
+
+  hsh() {}
+  hsh(string s) { gen(s); }
+
+  void gen(string _S)
+  {
+    if (base.s==0)
+      base.s = 1358;
+    invbase = {base.f.inv(),base.s.inv()};
+    S = _S;
+    pows.resize(S.size()), ipows.resize(S.size()), cum.resize(S.size()+1);
+    pows[0] = ipows[0] = {1,1};
+    for (int i = 1; i < (int)S.size(); i++)
+    {
+      pows[i] = pows[i-1]*base;
+      ipows[i] = ipows[i-1]*invbase;
+    }
+
+    for (int i = 0; i < (int)S.size(); i++)
+      cum[i+1] = cum[i] + pows[i]*(int)(S[i]-'a'+1);
+  }
+
+  // Get the hash of the subtring [l,r]
+  pair<mod_int,mod_int> get(int l, int r)
+  {
+    return ipows[l]*(cum[r+1]-cum[l]);
+  }
+
+  int lcp(hsh& b)
+  {
+    int lo = 0, hi = min(S.size(),b.S.size());
+    while (lo < hi)
+    {
+      int mid = (lo+hi+1)/2;
+      if (cum[mid] == b.cum[mid]) lo = mid;
+      else
+        hi = mid-1;
+    }
+    return lo;
+  }
+};
+endsnippet
+
+snippet trie
+struct Trie
+{
+  static const int ALPHSIZE = 2;
+  struct Node {
+    // Keeps track of the index of the next node depending on the chosen
+    // alphabet.
+    int c[ALPHSIZE];
+
+    // Each node has a count of how many of the same exist. If it is 0, the
+    // string does not exist.
+    int cnt;
+
+    // This is the end of a string.
+    bool end;
+
+    Node() : cnt(0),end(false)
+    {
+      memset(c,0,sizeof(c));
+    }
+  };
+
+  // At most Q strings of size L
+  static const int L = 30, Q = 2e5+10;
+  Node ns[(L+1)*Q];
+
+  // Current nodecounter.
+  int ncnt = 1;
+
+  // Add x to the trie, where i is the root, and bit is the index we are
+  // starting from.
+  // To remove, let v = -1
+  void update(int x, int v, int i = 1, int bit = L-1)
+  {
+    ns[i].cnt += v;
+    if (bit < 0)
+      return;
+    int& c = ns[i].c[(x>>bit)&1];
+    // If this doesn't already exist, we need to add the node.
+    if (!c)
+      c = ++ncnt;
+    update(x,v,c,bit-1);
+  }
+
+  // Calculate maximum XOR with XOR.
+  int query(int x, int i = 1, int bit = L-1)
+  {
+    if (bit < 0)
+      return 0;
+    int c = ns[i].c[!((x>>bit) & 1)];
+    if (ns[c].cnt)
+      return query(x,ns[i].c[!((x>>bit)&1)],bit-1) ^ (1<<bit);
+    return query(x,ns[i].c[(x>>bit)&1],bit-1);
+  }
+};
+endsnippet
+

@@ -1,0 +1,49 @@
+snippet BIT
+struct BIT
+{
+  vector<int> t;
+  int tn;
+
+  BIT(int _n)
+  {
+    assert(_n > 0);
+    tn = _n;
+    t = vector<int>(tn+1,0);
+  }
+
+  void update(int x, int val)
+  {
+    x++;
+    while (x <= tn)
+    {
+      t[x] += val;
+      x += (x&-x);
+    }
+  }
+
+  // Find sum in [0..x]
+  int query(int x)
+  {
+    assert(x < tn);
+    x++;
+    int res = 0;
+    while (x > 0)
+    {
+      res += t[x];
+      x -= (x&-x);
+    }
+    return res;
+  }
+
+  // Find sum in [l..r]
+  int get(int l, int r)
+  {
+    assert(l <= r);
+    if (l==0)
+      return query(r);
+    return query(r)-query(l-1);
+  }
+};
+endsnippet
+
+

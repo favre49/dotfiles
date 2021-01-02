@@ -1,0 +1,39 @@
+snippet nck
+const int N = 2e5 + 7;
+
+mod_int fact[N], invfact[N], inv[N];
+
+void init() {
+  inv[1] = invfact[1] = invfact[0] = fact[0] = fact[1] = 1;
+  for (int i = 2; i < N; i++) {
+    fact[i] = fact[i - 1]*i;
+    inv[i] = inv[MOD % i]*(MOD - MOD / i);
+    invfact[i] = invfact[i - 1]*inv[i];
+  }
+}
+
+mod_int cnk(int n, int k) {
+  if (n < k) return 0;
+  if (n < 0 || k < 0) return 0;
+  return fact[n]*(invfact[k]*invfact[n - k]);
+}
+endsnippet
+
+snippet sieve
+const int N = 1e5+7;
+bool prime[N];
+
+void sieve()
+{
+    memset(prime,true,sizeof(prime));
+
+    for (int p = 2; p*p <= N; p++)
+    {
+        if (prime[p])
+        {
+	        for (int i = p*p; i <= N-1; i += p)
+	          prime[i] = false;
+        }
+    }
+}
+endsnippet

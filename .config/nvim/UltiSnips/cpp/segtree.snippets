@@ -1,0 +1,706 @@
+snippet implicitsegtree
+struct SegTreeNode {
+  // Node values
+  int sum = 0;
+
+  int left, right; // Segment bounds
+  SegTreeNode *left_child = nullptr, *right_child = nullptr; // Children
+
+  // Segment for range [lb,rb)
+  SegTreeNode(int lb, int rb)
+  {
+    left = lb;
+    right = rb;
+  }
+
+  void extend()
+  {
+    // Split the range into two equal subranges, if possible
+    if (!left_child && left+1 < right)
+    {
+      int t = (left+right)/2;
+      left_child = new SegTreeNode(left,t);
+      right_child = new SegTreeNode(t,right);
+    }
+  }
+
+  void update(int pos, int val)
+  {
+    extend();
+    sum += val;
+    if (left_child)
+    {
+      if (pos < left_child->right)
+        left_child->update(pos,val);
+      else
+        right_child->update(pos,val);
+    }
+  }
+
+  int query(int lq, int rq)
+  {
+    if (lq <= left && right <= rq)
+      return sum;
+    if (max(left,lq) >= min(right,rq))
+      return 0;
+    extend();
+    return left_child->query(lq,rq) + right_child->query(lq,rq);
+  }
+};
+endsnippet
+
+snippet itsegtree
+struct S {
+  int x;
+
+  // This should be the identity element
+  S()
+  {
+    x = 0;
+  }
+  
+  S(int _x):x(_x){}
+};
+
+S op(S& a, S& b)
+{
+  return {max(a.x,b.x)};
+}
+
+// Predicate for binary search. Must be true for identity.
+bool f(S /*x*/)
+{
+  // Dummy for binary search
+  return true;
+}
+
+struct segtree
+{
+  int _n;
+  vector<S> t;
+  int size;
+  int log;
+
+  segtree(): segtree(0) {}
+
+  segtree(int n = -1)
+  {
+    if (n >= 0)
+      init(n);
+  }
+
+  void init(int n)
+  {
+    _n = n;
+    log = 0;
+    while ((1U<<log) < (unsigned int)(n)) log++;
+    size = 1<<log;
+    t.assign(2*size,S());
+  }
+
+  void build(vector<S> v)
+  {
+    init((int)v.size());
+    assert(_n != 0);
+
+    for (int i = 0; i < _n; i++)
+      t[size+i] = v[i];
+
+    for (int i = size-1; i > 0; i--)
+      t[i] = op(t[2*i],t[2*i+1]);
+  }
+
+  void set(int p, S x)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    t[p] = x;
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  S get(int p)
+  {
+    assert(0 <= p && p < _n);
+    return t[p+size];
+  }
+
+  // Find result for range [l,r)
+  S query (int l, int r)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    S ansl, ansr;
+    l += size;
+    r += size;
+    while (l < r)
+    {
+      if (l&1) ansl = op(ansl,t[l++]);
+      if (r&1) ansr = op(t[--r],ansr);
+      l >>= 1;
+      r >>= 1;
+    }
+    return op(ansl,ansr);
+  }
+
+  /* Binary Search */
+  // Find the maximum value of r such that [l,r) is true
+  int max_right(int l)
+  {
+    assert(0 <= l && l <= _n);
+
+    if (l==_n) return _n;
+    l += size;
+    S sm;
+    do{
+      while (l%2==0)
+        l >>= 1;
+      if (!f(op(sm,t[l])))
+      {
+        while (l < size) {
+          l *= 2;
+          if (f(op(sm,t[l])))
+          {
+            sm = op(sm,t[l]);
+            l++;
+          }
+        }
+        return l - size;
+      }
+      sm = op(sm,t[l]);
+      l++;
+    } while((l&-l) != l);
+    return _n;
+  }
+
+  // This is the minimum l such that [l,r) is true
+  int min_left(int r)
+  {
+    assert(0 <= r && r <= _n);
+    if (r==0)
+      return 0;
+    r += size;
+    S sm;
+    do {
+      r--;
+      while(r>1 && (r%2)) r >>= 1;
+      if (!f(op(t[r],sm)))
+      {
+        while (r < size)
+        {
+          r = (2*r+1);
+          if (f(op(t[r],sm)))
+          {
+            sm = op(t[r],sm);
+            r--;
+          }
+        }
+        return r+1-size;
+      }
+      sm = op(t[r],sm);
+    }
+    while((r & -r) != r);
+    return 0;
+  }
+};
+endsnippet
+
+snippet itlazysegtree
+struct S {
+  int x;
+  int w;
+
+  // This should be the identity element
+  S()
+  {
+    x = 0;
+    w = 1;
+  }
+  
+  S(int _x, int _w):x(_x), w(_w){}
+};
+
+// Paremeters of the function we are applying on the range.
+struct F{
+  int d;
+  // Must be identity
+  F() {d=0;}
+  F(int _d):d(_d){}
+};
+
+// Returns the transform with parameters F and input S
+S mapping(F f, S x)
+{
+  if (f.d==0)
+    return x;
+  return S();
+}
+
+// Returns f o g, which is the composition of them under the operation op
+// It is necessary that f(x) o f(y) = f(x o y)
+F composition(F f, F g)
+{
+  if (f.d==0) return g;
+  return f;
+}
+
+S op(S a, S b)
+{
+  return S(a.x*b.w+b.x,a.w*b.w);
+}
+
+// Predicate for binary search. Must be true for identity.
+bool f(S /*x*/)
+{
+  // Dummy for binary search
+  return true;
+}
+
+struct lazy_segtree
+{
+  int _n;
+  vector<S> t;
+  vector<F> lz;
+  int size;
+  int log;
+
+  lazy_segtree(): lazy_segtree(0) {}
+
+  lazy_segtree(int n = -1)
+  {
+    if (n >= 0)
+      init(n);
+  }
+
+  lazy_segtree(vector<S> v)
+  {
+    build(v);
+  }
+
+  void init(int n)
+  {
+    _n = n;
+    log = 0;
+    while ((1U<<log) < (unsigned int)(n)) log++;
+    size = 1<<log;
+    t.assign(2*size,S());
+    lz = vector<F>(size);
+  }
+
+  void build(vector<S> v)
+  {
+    init((int)v.size());
+    assert(_n != 0);
+
+    for (int i = 0; i < _n; i++)
+      t[size+i] = v[i];
+
+    for (int i = size-1; i > 0; i--)
+      t[i] = op(t[2*i],t[2*i+1]);
+  }
+
+  void all_apply(int k, F f)
+  {
+    t[k] = mapping(f,t[k]);
+    if (k < size) lz[k] = composition(f,lz[k]);
+  }
+
+  void push(int k)
+  {
+    all_apply(2*k,lz[k]);
+    all_apply(2*k+1,lz[k]);
+    lz[k] = F();
+  }
+
+  void set(int p, S x)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    t[p] = x;
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  S get(int p)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    return t[p];
+  }
+
+  // Find result for range [l,r)
+  S query (int l, int r)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    if (l==r) return S();
+    S ansl, ansr;
+    l += size;
+    r += size;
+
+    for (int i = log; i >= 1; i--)
+    {
+      if (((l>>i)<<i) != l) push (l>>i);
+      if (((r>>i)<<i) != r) push (r>>i);
+    }
+
+    while (l < r)
+    {
+      if (l&1) ansl = op(ansl,t[l++]);
+      if (r&1) ansr = op(t[--r],ansr);
+      l >>= 1;
+      r >>= 1;
+    }
+    return op(ansl,ansr);
+  }
+
+  void apply(int p, F f)
+  {
+    assert(0 <= p && p < _n);
+    p += size;
+    for (int i = log; i >= 1; i--)
+      push(p>>i);
+    t[p] = mapping(f,t[p]);
+    for (int i = 1; i <= log; i++)
+      t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
+  }
+
+  void apply(int l, int r, F f)
+  {
+    assert(0 <= l && l <= r && r <= _n);
+    if (l==r) return;
+
+    l += size;
+    r += size;
+
+    for (int i = log; i >= 1; i--)
+    {
+      if (((l >> i)<<i)!=l) push(l>>i);
+      if (((r >> i)<<i)!=r) push((r-1)>>i);
+    }
+
+    {
+      int l2 = l, r2 = r;
+      while (l < r)
+      {
+        if (l&1) all_apply(l++,f);
+        if (r&1) all_apply(--r,f);
+        l >>= 1;
+        r >>= 1;
+      }
+      l = l2, r = r2;
+    }
+
+    for (int i = 1; i <= log; i++)
+    {
+      if (((l >> i)<<i)!=l) t[l>>i] = op(t[2*(l>>i)],t[2*(l>>i)+1]);
+      if (((r >> i)<<i)!=r) t[(r-1)>>i] = op(t[2*((r-1)>>i)],t[2*((r-1)>>i)+1]);
+    }
+  }
+
+  /* Binary Search */
+  // Find the maximum value of r such that [l,r) is true
+  int max_right(int l)
+  {
+    assert(0 <= l && l <= _n);
+
+    if (l==_n) return _n;
+    l += size;
+    for (int i = log; i >= 1; i--)
+      push(l>>i);
+    S sm;
+    do{
+      while (l%2==0)
+        l >>= 1;
+      if (!f(op(sm,t[l])))
+      {
+        while (l < size) {
+          push(l);
+          l *= 2;
+          if (f(op(sm,t[l])))
+          {
+            sm = op(sm,t[l]);
+            l++;
+          }
+        }
+        return l - size;
+      }
+      sm = op(sm,t[l]);
+      l++;
+    } while((l&-l) != l);
+    return _n;
+  }
+
+  // This is the minimum l such that [l,r) is true
+  int min_left(int r)
+  {
+    assert(0 <= r && r <= _n);
+    if (r==0)
+      return 0;
+    r += size;
+    for (int i = log; i >= 1; i--)
+      push((r-1)<<i);
+    S sm;
+    do {
+      r--;
+      while(r>1 && (r%2)) r >>= 1;
+      if (!f(op(t[r],sm)))
+      {
+        while (r < size)
+        {
+          push(r);
+          r = (2*r+1);
+          if (f(op(t[r],sm)))
+          {
+            sm = op(t[r],sm);
+            r--;
+          }
+        }
+        return r+1-size;
+      }
+      sm = op(t[r],sm);
+    }
+    while((r & -r) != r);
+    return 0;
+  }
+};
+endsnippet
+
+snippet persistentsegtree
+struct PersistentSegTree {
+  struct SegTreeNode {
+    SegTreeNode *l, *r; // Children
+
+    // Node values
+    int mx;
+
+    SegTreeNode(int val=0) : l(nullptr),r(nullptr),mx(val) {}
+    SegTreeNode(SegTreeNode *l, SegTreeNode *r) : l(l),r(r),mx(0) {
+      if (l) mx = max(mx,l->mx);
+      if (r) mx = max(mx,r->mx);
+    }
+  };
+
+  vector<SegTreeNode*> roots; // History
+  int L, R; // Bounds
+
+  PersistentSegTree(int tl, int tr) : L(tl), R(tr) {
+    roots.push_back(build(tl,tr));
+  }
+
+  int size() { return (int)roots.size(); }
+
+  SegTreeNode*& operator[](int idx) {
+    assert(idx < roots.size());
+    return roots[idx];
+  }
+
+  // Build segtree
+  SegTreeNode* build(int tl, int tr) {
+    if (tl==tr)
+      return new SegTreeNode(0);
+    int tm = (tl+tr)/2;
+    return new SegTreeNode(build(tl,tm),build(tm+1,tr));
+  }
+
+  // Querying
+  int query(int l, int r) {
+    return query(roots.back(),l,r,L,R);
+  }
+
+  int query(int ind, int l, int r) {
+    return query(roots[ind],l,r,L,R);
+  }
+
+  int query(SegTreeNode* v, int l, int r, int tl, int tr) {
+    if (l > r) return 0;
+    if (l == tl && r == tr) return v->mx;
+    int tm = (tl+tr)/2;
+    return max(query(v->l,l,min(r,tm),tl,tm),query(v->r,max(l,tm+1),r,tm+1,tr));
+  }
+
+  // Point updates
+  void update(int pos, int val) {
+    roots.push_back(update(roots.back(),pos,val,L,R));
+  }
+
+  SegTreeNode* update(SegTreeNode* v, int pos, int val, int tl, int tr) {
+    if (tl==tr)
+      return new SegTreeNode(val);
+    int tm = (tl+tr)/2;
+    if (pos <= tm)
+      return new SegTreeNode(update(v->l,pos,val,tl,tm),v->r);
+    else
+      return new SegTreeNode(v->l,update(v->r,pos,val,tm+1,tr));
+  }
+};
+endsnippet
+
+snippet segtree
+struct SegTree {
+  using S = int; // Struct for type
+  vector<S> t; // The segtree array
+  int n; // Size of held array
+  const S ID = INT_MAX;
+
+  // Operation of segtree
+  // TODO: check if this should be copies in the case of structs
+  S op(S a, S b) {
+    return min(a,b);
+  }
+
+  SegTree(vector<S>& a) {
+    assert(a.size() != 0);
+    n = a.size();
+    t.resize(4*n);
+    build(a,1,0,n-1);
+  }
+
+  void build(vector<S>& a, int v, int tl, int tr) {
+    if (tl==tr) {
+      t[v] = a[tl];
+    }
+    else {
+      int tm = (tl+tr)/2;
+      build(a,2*v,tl,tm);
+      build(a,2*v+1,tm+1,tr);
+      t[v] = op(t[2*v],t[2*v+1]);
+    }
+  }
+
+  S query(int l, int r) {
+    return query(1,0,n-1,l,r);
+  }
+  S query(int v, int tl, int tr, int l, int r) {
+    if (l > r) return ID;
+    if (l==tl && r==tr)
+      return t[v];
+    int tm = (tl+tr)/2;
+    return op(query(2*v,tl,tm,l,min(r,tm)),query(2*v+1,tm+1,tr,max(l,tm+1),r));
+  }
+
+  void update(int pos, S new_val) {
+    update(1,0,n-1,pos,new_val);
+  }
+  void update(int v, int tl, int tr, int pos, S new_val) {
+    if (tl==tr) {
+      t[v] = new_val;
+    }
+    else {
+      int tm = (tl+tr)/2;
+      if (pos <= tm)
+        update(2*v,tl,tm,pos,new_val);
+      else
+        update(2*v+1,tm+1,tr,pos,new_val);
+      t[v] = op(t[2*v],t[2*v+1]);
+    }
+  }
+};
+endsnippet
+
+snippet lazysegtree
+// Recursive lazy segment tree. About 2x slower than iterative!
+struct LazySegTree {
+  using S = ll; // Struct for type
+  using T = ll; // Type for range update
+  vector<S> t; // The segtree array
+  vector<T> lz; // Lazy propagation array
+  int n; // Size of held array
+  const S E = INT_MAX;
+  const T ID = 0;
+
+  // Operation of segtree
+  S op(S a, S b) {
+    return min(a,b);
+  }
+  // Range update operation
+  S map(S a, T b) {
+    a += b;
+    return a;
+  }
+  T compose(T ne, T ol) {
+    ne += ol;
+    return ne;
+  }
+
+  void push(int v) {
+    t[2*v] = map(t[2*v],lz[v]) ;
+    lz[2*v] = compose(lz[v],lz[2*v]);
+    t[2*v+1] = map(t[2*v+1],lz[v]) ;
+    lz[2*v+1] = compose(lz[v],lz[2*v+1]);
+    lz[v]= ID;
+  }
+
+  LazySegTree(vector<S>& a) {
+    assert(a.size() != 0);
+    n = a.size();
+    t = vector<S>(4*n,E);
+    lz = vector<T>(4*n,ID);
+    build(a,1,0,n-1);
+  }
+
+  void build(vector<S>& a, int v, int tl, int tr) {
+    if (tl==tr) {
+      t[v] = a[tl];
+    }
+    else {
+      int tm = (tl+tr)/2;
+      build(a,2*v,tl,tm);
+      build(a,2*v+1,tm+1,tr);
+      t[v] = op(t[2*v],t[2*v+1]);
+    }
+  }
+
+  // Range query in [l,r]
+  S query(int l, int r) {
+    return query(1,0,n-1,l,r);
+  }
+  S query(int v, int tl, int tr, int l, int r) {
+    if (l > r) return E;
+    if (l==tl && r==tr)
+      return t[v];
+    push(v);
+    int tm = (tl+tr)/2;
+    return op(query(2*v,tl,tm,l,min(r,tm)),query(2*v+1,tm+1,tr,max(l,tm+1),r));
+  }
+
+  // Point update
+  void update(int pos, S new_val) {
+    update(1,0,n-1,pos,new_val);
+  }
+  void update(int v, int tl, int tr, int pos, S new_val) {
+    if (tl==tr) {
+      t[v] = new_val;
+    }
+    else {
+      int tm = (tl+tr)/2;
+      push(v);
+      if (pos <= tm)
+        update(2*v,tl,tm,pos,new_val);
+      else
+        update(2*v+1,tm+1,tr,pos,new_val);
+      t[v] = op(t[2*v],t[2*v+1]);
+    }
+  }
+
+  // Range update
+  void apply(int l, int r, T app) {
+    apply(1,0,n-1,l,r,app);
+  }
+  void apply(int v, int tl, int tr, int l, int r, T app) {
+    if (l>r) return;
+    if (l==tl && r==tr) {
+      t[v] = map(t[v],app);
+      lz[v] = compose(app,lz[v]);
+    } else {
+      push(v);
+      int tm = (tl+tr)/2;
+      apply(2*v,tl,tm,l,min(r,tm),app);
+      apply(2*v+1,tm+1,tr,max(l,tm+1),r,app);
+      t[v] = op(t[2*v],t[2*v+1]);
+    }
+  }
+};
+endsnippet

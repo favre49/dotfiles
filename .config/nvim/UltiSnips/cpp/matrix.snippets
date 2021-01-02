@@ -1,0 +1,65 @@
+snippet matrix
+template<class T>
+struct Mat{
+  int n,m;
+  vector<vector<T>> d;
+
+  Mat()
+  {
+    n = 0, m = 0;
+  }
+
+  Mat(int _n, int _m): n(_n), m(_m)
+  {
+    d = vector<vector<T>>(n,vector<mod_int>(m));
+  }
+
+  Mat(const vector<vector<T>>& v): Mat((int)v.size(),(int)v[0].size()){
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++)
+        d[i][j] = v[i][j];
+  }
+
+  Mat operator +(Mat other) {
+    assert(n == other.n && m == other.m);
+    Mat res = Mat(n,m);
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++)
+        res.d[i][j] = d[i][j] + other.d[i][j];
+    return res;
+  }
+
+  Mat operator -(Mat other) {
+    assert(n == other.n && m == other.m);
+    Mat res = Mat(n,m);
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++)
+        res.d[i][j] = d[i][j] - other.d[i][j];
+    return res;
+  }
+
+  Mat operator *(Mat other) {
+    assert(m == other.n);
+    Mat prod = Mat(n,other.m);
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++)
+        for (int k = 0; k < other.m; k++)
+          prod.d[i][k] += d[i][j] * other.d[j][k];
+    return prod;
+  }
+
+  Mat operator ^(ll p)
+  {
+    assert(p >= 0);
+    Mat res(n,n), base(*this);
+    for (int i = 0; i < n; i++)
+      res.d[i][i] = 1;
+    for (;p; p /= 2)
+    {
+      if (p&1) res = res*base;
+      base = base*base;
+    }
+    return res;
+  }
+};
+endsnippet

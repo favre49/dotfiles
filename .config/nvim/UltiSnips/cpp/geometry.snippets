@@ -1,0 +1,135 @@
+snippet point
+template<class T>
+struct TPoint {
+	typedef TPoint P;
+	T x, y;
+  static constexpr T eps = static_cast<T>(1e-9);
+	explicit TPoint(T x=0, T y=0) : x(x), y(y) {}
+	bool operator<(P p) const { return tie(x,y) < tie(p.x,p.y); }
+	bool operator==(P p) const { 
+		// return tie(x,y)==tie(p.x,p.y); 
+		return abs(x-p.x) <= eps && abs(y-p.y) <= eps;
+	}
+	P operator+(P p) const { return P(x+p.x, y+p.y); }
+	P operator-(P p) const { return P(x-p.x, y-p.y); }
+	P operator*(T d) const { return P(x*d, y*d); }
+	P operator/(T d) const { return P(x/d, y/d); }
+	T dot(P p) const { return x*p.x + y*p.y; }
+	T cross(P p) const { return x*p.y - y*p.x; }
+	T cross(P a, P b) const { return (a-*this).cross(b-*this); }
+	T dist2() const { return x*x + y*y; }
+	double dist() const { return sqrt((double)dist2()); }
+
+	// angle to x-axis in interval [-pi, pi]
+	double angle() const { return atan2(y, x); }
+	P unit() const { return *this/dist(); } // makes dist()=1
+	P perp() const { return P(-y, x); } // rotates +90 degrees
+	P normal() const { return perp().unit(); }
+
+	// returns point rotated 'a' radians ccw around the origin
+	P rotate(double a) const {
+		return P(x*cos(a)-y*sin(a),x*sin(a)+y*cos(a)); }
+
+  // Polar sorting
+  inline bool is_upper() const {
+    return (y > eps || (abs(y) <= eps && x > eps));
+  }
+  inline int cmp_polar(const P& rhs) const {
+    bool a = is_upper(); bool b = rhs.is_upper();
+    if (a != b) {
+      return (a ? -1 : 1);
+    }
+    T v = x * rhs.y - y * rhs.x;
+    return (v > eps ? -1 : (v < -eps ? 1 : 0));
+  }
+};
+
+using Point = TPoint<double>;
+endsnippet
+
+snippet line
+// Untested
+template<class T>
+struct TLine {
+  typedef TLine L;
+  typedef TPoint<T> P;
+  static constexpr T eps = static_cast<T>(1e-9);
+  P a,b,ab;
+  TLine(): a(),b(),ab() {}
+  TLine(const P& a, const P& b, bool twoPoints = true): a(a),b(b),ab(twoPoints?b-a:b) {}
+  TLine(const T& xa, const T& ya, const T& xb, const T& yb):a(xa,ya),b(xb,yb),ab(xb-xa,yb-ya) {}
+  bool onLine(const P& p) {
+    if (a==b) return p==a;
+    return abs((p-a).cross(ab)) <= eps;
+  }
+  bool onSeg(const P& p) {
+    if (a==b) return p == a;
+    auto veca = a-p, vecb = b-p;
+    return abs(veca.cross(vecb)) <= eps && veca.dot(vecb) <= eps;
+  }
+  T distLine(const P& p)
+  {
+    if (a==b) return a.dist(p);
+    return abs((p-a).cross(ab))/ab.norm();
+  }
+  T distSeg(const P& p)
+  {
+    if ((p-a).dot(ab) <= 0) return dist(p,a);
+    if ((p-b).dot(ab) >= 0) return dist(p,b);
+    return distLine(p);
+  }
+  P projection(const P& p)
+  {
+    P res = a;
+    if (a == b) return a;
+    res += ab * distLine(p);
+    return res;
+  }
+  P reflection(const P& p)
+  {
+    P res = projection(p);
+    res = 2*res - p;
+  }
+
+  // Returns 0 if parallel or collinear
+  // returns 1 if unique intersections
+  // returns -1 if infinite intersections
+  int intersect(const L& l, P& res)
+  {
+    if (abs(ab.cross(l.ab)) > eps) { // not parallel
+      res = l.a - (l.ab)*ab.cross(l.a-a)/(ab).cross(l.ab);
+      return 1;
+    }
+    else
+      return -(abs(ab.cross(l.a-a))<= eps || l.a == l.b);
+  }
+
+  // returns 1 if unique, stored in r1
+  // returns 2 if infinitely many, r1 and r2 are endpoints
+  // returns 0 if no intersection
+  int intersectSeg(const L& l, P& r1, P& r2)
+  {
+    if (a==b) {
+      if (l.a==l.b) {
+        if (b==l.b) { r1 = b; return 1; } // all equal
+        else return 0;
+      } else return l.intersect(*this,r1,r2);
+    }
+    P d = l.a-a;
+    auto s = ab.cross(l.ab), s1 = ab.cross(d), s2 = l.ab.cross(d);
+    if (s==0) { // parallel
+      auto b1 = a.dot(ab), c1 = b.dot(ab), b2 = l.a.dot(ab), c2 = l.b.dot(ab);
+      if (s1 || s2 || max(b1,min(b2,c2)) > min(c1,max(b2,c2)))
+        return 0;
+      r1 = min(b2,c2) < b1 ? a : (b2 < c2 ? l.a : l.b);
+      r2 = max(b2,c2) > c1 ? b : (b2 > c2 ? l.a : l.b);
+      return 2-(r1==r2);
+    }
+    if (s < 0) {s = -s; s1 = -s1; s2 = -s2;}
+    if (0 < s1 || s <= s1 || 0 < s2 || s <= s2)
+      return 0;
+    r1 = a-ab*s2/s;
+    return 1;
+  }
+};
+endsnippet
