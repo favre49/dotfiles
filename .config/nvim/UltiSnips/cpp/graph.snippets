@@ -1,102 +1,197 @@
 snippet DSU
-const int N = 1e5+7;
-int parent[N], sz[N];
-
-// Create a new set
-void make_set(int v)
-{
-    parent[v] = v;
-    sz[v] = 1;
-}
-
-// Find the set of v
-int find_set(int v)
-{
-    if (v==parent[v])
-        return v;
-    
-    // Path compression.
-    return parent[v] = find_set(parent[v]);
-}
-
-// Unite two sets 
-void union_sets(int a, int b)
-{
-    a = find_set(a);
-    b = find_set(b);
-    if (a != b)
-    {
-        if (sz[a] < sz[b])
-	        swap(a,b);
-        parent[b] = a;
-        sz[a] += sz[b];
+struct DSU {
+  struct node {
+    int p; // parent
+    int s; // size
+  };
+ 
+  vector<node> nodes;
+  DSU(int n) {
+    nodes.resize(n);
+    for (int i =0; i < n; i++) {
+      nodes[i].p = i;
+      nodes[i].s = 1;
     }
-}
+  }
+ 
+  node& operator[](int index) {
+    return nodes[index];
+  }
+ 
+  int size(int v) {
+    return nodes[find(v)].s;
+  }
+ 
+  int find(int v) {
+    if (nodes[v].p==v) 
+      return v;
+    return nodes[v].p = find(nodes[v].p);
+  }
+ 
+  bool merge(int a, int b) {
+    a = find(a);
+    b = find(b);
+    if (a==b)
+      return false;
+    if (nodes[a].s < nodes[b].s)
+      swap(a,b);
+    nodes[b].p = a;
+    nodes[a].s += nodes[b].s;
+    return true;
+  }
+};
 endsnippet
 
 snippet floyd
-for (int k = 0; k < n; k++)
-{
-  for (int i = 0; i < n; i++)
-  {
-    for (int j = 0; j < n; j++)
-    {
+for (int k = 0; k < n; k++) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
 	    // Include if graph has negative edges
       //if (d[i][k] < INT_MAX && d[k][j] < INT_MAX)
-	      d[i][j] = min(d[i][j],d[i][k]+d[k][j])
+	      d[i][j] = min(d[i][j],d[i][k]+d[k][j]);
 	  }
   }
 }
 endsnippet
 
-snippet tarjan
-// comps stores the number of components, they are 1-indexed.
-// comp stores the component number of any part
-int low[N], dtime[N], dfstime, st[N], _size, comp[N], comps;
-bool inst[N];
+snippet scc
+// Finds the strongly connected components of a directed graph
+// comps stores the number of components
+// comp stores the component number of any part, ONE INDEXED
+struct SCC {
+  vector<vector<int>> adj;
+  vector<int> low, dtime, comp;
+  vector<bool> inst;
+  stack<int> st;
+  int comps, timer, _n;
 
-void tarjan(int u)
-{
-  low[u] = dtime[u] = ++dfstime;
-  st[_size++] = u;
-  inst[u] = true;
-  for (int v : adj[u])
-  {
-    if (dtime[v]==-1)
-    {
-      tarjan(v);
-      low[u] = min(low[u],low[v]);
-    }
-    else if (inst[v])
-      low[u] = min(low[u],dtime[v]);
+  SCC(int n):_n(n) {
+    comps = timer = 0;
+		adj.resize(n);
+    dtime = vector<int>(n,-1);
+    low = comp = vector<int>(n);
+    inst = vector<bool>(n);
   }
-
-  if (dtime[u] == low[u])
-  {
-    comps++;
-    int v = -1;;
-    do
-    {
-      v = st[--_size];
-      inst[v] = false;
-      comp[v] = comps;
-    }
-    while (u!=v);
+  void add_edge(int u, int v) { adj[u].push_back(v); }
+  void scc() {
+    for (int i = 0; i < _n; i++)
+      if (dtime[i]==-1) tarjan(i);
   }
-}
+  void tarjan(int u) {
+    low[u] = dtime[u] = ++timer;
+    st.push(u); inst[u] = true;
+    for (int v : adj[u]) {
+      if (dtime[v]==-1) {
+        tarjan(v);
+        low[u] = min(low[u],low[v]);
+      }
+      else if (inst[v])
+        low[u] = min(low[u],dtime[v]);
+    }
+    if (dtime[u]==low[u]) {
+      comps++; int v = -1;
+      do {
+        v = st.top(); st.pop();
+        inst[v] = false, comp[v] = comps;
+      } while(u != v);
+    }
+  }
+};
+endsnippet
 
-void scc(int n)
-{
-  comps = dfstime = _size = 0;
-  memset(dtime,-1,sizeof(dtime));
-  memset(low,0,sizeof(low));
-  memset(st,0,sizeof(st));
-  memset(comp,0,sizeof(comp));
-  memset(inst,0,sizeof(inst));
-  for (int i = 0; i < n; i++)
-    if (dtime[i]==-1)
-      tarjan(i);
-}
+snippet cutpoints
+// Finds the articulation vertices in an undirected graph
+// is_cut stores true if the vertex is an articulation vertex
+struct CutPoints {
+  vector<vector<int>> adj;
+  vector<int> tin, low;
+  vector<bool> visited, is_cut;
+  int timer, _n;
+
+  CutPoints(int n):_n(n) {
+    adj.resize(n);
+    visited.resize(n);
+    is_cut.resize(n);
+    tin.assign(n,-1);
+    low.assign(n,-1);
+    timer = 0;
+  }
+  void add_edge(int u, int v) {adj[u].push_back(v);adj[v].push_back(u);}
+  void find_cut_points() {
+    for (int i = 0; i < _n; i++)
+      if (!visited[i])
+        dfs(i);
+  }
+  void dfs(int v, int p = -1) {
+    visited[v] = true;
+    tin[v] = low[v] = timer++;
+    int children = 0;
+    for (int to : adj[v]) {
+      if (to==p) continue;
+      if (visited[to]) {
+        low[v] = min(low[v],tin[to]);
+      } else {
+        dfs(to,v);
+        low[v] = min(low[v],low[to]);
+        if (low[to] >= tin[v] && p != -1) // is a cut point
+          is_cut[v] = true;
+        children++;
+      }
+    }
+    if (p==-1 && children > 1) // is a cut point
+      is_cut[v] = true;
+  }
+};
+endsnippet
+
+snippet bridges
+struct edge {
+  int u,v;
+  bool bridge;
+};
+
+// Finds bridges in O(N+M)
+struct Bridges {
+  vector<vector<int>> adj;
+  vector<edge> edges;
+  vector<int> tin, low;
+  vector<bool> visited;
+  int timer, _n;
+  Bridges(int n):_n(n) {
+    adj.resize(n);
+    visited.resize(n);
+    tin.assign(n,-1);
+    low.assign(n,-1);
+    timer = 0;
+  }
+  void add_edge(int u, int v) {
+    adj[u].push_back(edges.size());
+    adj[v].push_back(edges.size());
+    edges.push_back({u,v,0}); // Change constructor as necessary
+  }
+  void find_bridges(int v, int p = -1) {
+    for (int i = 0; i < _n; i++) 
+      if (!visited[i])
+        dfs(i);
+  }
+  void dfs(int v, int p = -1) {
+    visited[v] = true;
+    tin[v] = low[v] = timer++;
+    for (int e : adj[v]) 
+    {
+      int to = edges[e].u^edges[e].v^v;
+      if (to==p) continue;
+      if (visited[to]) {
+        low[v] = min(low[v],tin[to]);
+      } else {
+        dfs(to,v);
+        low[v] = min(low[v],low[to]);
+        if (low[to] > tin[v]) // is a bridge
+          edges[e].bridge = true;
+      }
+    }
+  }
+};
 endsnippet
 
 snippet djikstra

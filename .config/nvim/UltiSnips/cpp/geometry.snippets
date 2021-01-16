@@ -29,26 +29,12 @@ struct TPoint {
 	// returns point rotated 'a' radians ccw around the origin
 	P rotate(double a) const {
 		return P(x*cos(a)-y*sin(a),x*sin(a)+y*cos(a)); }
-
-  // Polar sorting
-  inline bool is_upper() const {
-    return (y > eps || (abs(y) <= eps && x > eps));
-  }
-  inline int cmp_polar(const P& rhs) const {
-    bool a = is_upper(); bool b = rhs.is_upper();
-    if (a != b) {
-      return (a ? -1 : 1);
-    }
-    T v = x * rhs.y - y * rhs.x;
-    return (v > eps ? -1 : (v < -eps ? 1 : 0));
-  }
 };
 
 using Point = TPoint<double>;
 endsnippet
 
 snippet line
-// Untested
 template<class T>
 struct TLine {
   typedef TLine L;
@@ -69,26 +55,27 @@ struct TLine {
   }
   T distLine(const P& p)
   {
-    if (a==b) return a.dist(p);
-    return abs((p-a).cross(ab))/ab.norm();
+    if (a==b) return (a-p).dist();
+    return abs((p-a).cross(ab))/ab.dist();
   }
   T distSeg(const P& p)
   {
-    if ((p-a).dot(ab) <= 0) return dist(p,a);
-    if ((p-b).dot(ab) >= 0) return dist(p,b);
+    if ((p-a).dot(ab) <= 0) return (p-a).dist();
+    if ((p-b).dot(ab) >= 0) return (p-b).dist();
     return distLine(p);
   }
   P projection(const P& p)
   {
     P res = a;
     if (a == b) return a;
-    res += ab * distLine(p);
+    res = res + ab * ((p-a).dot(ab)/ab.dist2());
     return res;
   }
   P reflection(const P& p)
   {
     P res = projection(p);
-    res = 2*res - p;
+    res = res*2 - p;
+    return res;
   }
 
   // Returns 0 if parallel or collinear
@@ -132,4 +119,74 @@ struct TLine {
     return 1;
   }
 };
+
+using Line = TLine<long double>;
+endsnippet
+
+snippet circle
+// Implementations from KACTL, untested
+template<class T>
+struct TCircle {
+  typedef TCircle C;
+  typedef TPoint<T> P;
+  static constexpr T eps = static_cast<T>(1e-9);
+  static constexpr T PI = atan(1)*4;
+  P c;
+  T r;
+  TCircle(T x, T y, T rad):c(x,y),r(rad) {}
+  TCircle(P c, T rad):c(c),r(rad) {}
+  T area() const { return PI*r*r; }
+  T perimeter() const { return 2*PI*r; }
+  T diameter() const { return 2*r; }
+
+  // Returns true if there is an intersection
+  bool intersect(C& other, pair<P,P>& out) {
+    P delta = other.c-c;
+    assert(delta.x || delta.y || r != other.r);
+    if (!delta.x && !delta.y) return false;
+    T rt = r+other.r, d2 = delta.dist2();
+    T p = (d2+r*r-other.r*other.r)/(2.0*d2);
+    T h2 = r*r-p*p*d2;
+    if (d2 > rt*rt || h2 < 0) return false;
+    P mid = c+delta*p,per = delta.perp()*sqrt(h2/d2);
+    out = {mid+per,mid-per};
+    return true;
+  }
+
+  // Returns a pair of two points on the circle whos tangents intersect at p
+  // If p is inside the circle, NAN.
+  // First point is the one to the right as seen from p towards the center
+  pair<P,P> circleTangents(const P &p) {
+    P a = p - c;
+    T x = r*r/a.dist2(), y = sqrt(x-x*x);
+    return make_pair(c+a*x+a.perp()*y,c+a*x-a.perp()*y);
+  }
+};
+
+using Circle = TCircle<long double>;
+endsnippet
+
+snippet polarsort
+template <class P>
+bool sameDir(P s, P t) {
+	return s.cross(t) == 0 && s.dot(t) > 0;
+}
+// checks 180 <= s..t < 360?
+template <class P>
+bool isReflex(P s, P t) {
+	auto c = s.cross(t);
+	return c ? (c < 0) : (s.dot(t) < 0);
+}
+// operator < (s,t) for angles in [base,base+2pi)
+template <class P>
+bool angleCmp(P base, P s, P t) {
+	int r = isReflex(base, s) - isReflex(base, t);
+	return r ? (r < 0) : (0 < s.cross(t));
+}
+// is x in [s,t] taken ccw? 1/0/-1 for in/border/out
+template <class P>
+int angleBetween(P s, P t, P x) {
+	if (sameDir(x, s) || sameDir(x, t)) return 0;
+	return angleCmp(s, x, t) ? 1 : -1;
+}
 endsnippet

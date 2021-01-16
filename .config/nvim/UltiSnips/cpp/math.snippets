@@ -1,21 +1,23 @@
 snippet nck
-const int N = 2e5 + 7;
+vector<mod_int> fact, invfact, inv;
 
-mod_int fact[N], invfact[N], inv[N];
-
-void init() {
+void prepare_factorials(int N) {
+  assert(N >= 2);
+  fact.resize(N+1);
+  invfact.resize(N+1);
+  inv.resize(N+1);
   inv[1] = invfact[1] = invfact[0] = fact[0] = fact[1] = 1;
-  for (int i = 2; i < N; i++) {
-    fact[i] = fact[i - 1]*i;
-    inv[i] = inv[MOD % i]*(MOD - MOD / i);
-    invfact[i] = invfact[i - 1]*inv[i];
+  for (int i = 2; i <= N; i++) {
+    fact[i] = fact[i-1]*i;
+    inv[i] = inv[MOD%i]*(MOD-MOD/i);
+    invfact[i] = invfact[i-1]*inv[i];
   }
 }
 
-mod_int cnk(int n, int k) {
+mod_int choose(int n, int k) {
   if (n < k) return 0;
   if (n < 0 || k < 0) return 0;
-  return fact[n]*(invfact[k]*invfact[n - k]);
+  return fact[n]*(invfact[k]*invfact[n-k]);
 }
 endsnippet
 
@@ -35,5 +37,29 @@ void sieve()
 	          prime[i] = false;
         }
     }
+}
+endsnippet
+
+snippet floorsum
+// AtCoder Library implementation
+// Find sum of floor((ai+b)/m), 0 <= i <= n-1
+// O(log(n+m+a+b))
+// Tested on ARC111 E
+ll floor_sum(ll n, ll m, ll a, ll b) {
+    ll ans = 0;
+    if (a >= m) {
+        ans += (n - 1) * n * (a / m) / 2;
+        a %= m;
+    }
+    if (b >= m) {
+        ans += n * (b / m);
+        b %= m;
+    }
+ 
+    ll y_max = (a * n + b) / m, x_max = (y_max * m - b);
+    if (y_max == 0) return ans;
+    ans += (n - (x_max + a - 1) / a) * y_max;
+    ans += floor_sum(y_max, a, m, (a - x_max % a) % a);
+    return ans;
 }
 endsnippet

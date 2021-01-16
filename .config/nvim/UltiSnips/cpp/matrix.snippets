@@ -4,13 +4,9 @@ struct Mat{
   int n,m;
   vector<vector<T>> d;
 
-  Mat()
-  {
-    n = 0, m = 0;
-  }
+  Mat(): n(0), m(0){}
 
-  Mat(int _n, int _m): n(_n), m(_m)
-  {
+  Mat(int _n, int _m): n(_n), m(_m) {
     d = vector<vector<T>>(n,vector<mod_int>(m));
   }
 
@@ -54,8 +50,7 @@ struct Mat{
     Mat res(n,n), base(*this);
     for (int i = 0; i < n; i++)
       res.d[i][i] = 1;
-    for (;p; p /= 2)
-    {
+    for (;p; p /= 2) {
       if (p&1) res = res*base;
       base = base*base;
     }
