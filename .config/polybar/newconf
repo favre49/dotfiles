@@ -17,23 +17,34 @@
 ;==========================================================
 
 [colors]
-# Transparent background
-background = #000e0e0e
+# Solarized colorscheme
+base03 = #002b36
+base02 = #073642
+base01 = #586e75
+base00 = #5e81ac
+base0 = #839946
+base1 = #93a1a1
+base2 = #2e3440
+base3 = #fdf6e3
 
-# Silver text colour
-foreground = #c0c0c0
+yellow = #ebcb8b
+orange = #cb4b16
+red = #dc322f
+magenta = #d33682
+violet = #6c71c4
+blue = #268bd2
+cyan = #2aa198
+green = #859900
 
 [bar/lainbar]
 ;monitor = ${env:MONITOR:HDMI-1}
+monitor = eDP1
 width = 100%
 height = 27
-;offset-x = 1%
-;offset-y = 1%
-;radius = 6.0
 fixed-center = true
 
-background = ${colors.background}
-foreground = ${colors.foreground}
+background = ${colors.base2}
+foreground = ${colors.base00}
 
 line-size = 0
 line-color = #f00
@@ -54,22 +65,40 @@ font-3 = SauceCodePro Nerd Font:style=Regular:pixelsize=8
 
 modules-left = bspwm
 modules-center = date
-modules-right = updates-arch-combined mail spotify pulseaudio wlan battery-hearts
+modules-right = updates-arch-combined spotify pulseaudio wlan battery-hearts
 
-;tray-position = right
-;tray-padding = 2
-;tray-background = #0063ff
+cursor-click = pointer
+cursor-scroll = ns-resize
 
-;wm-restack = bspwm
-;wm-restack = i3
+[bar/lainbar_external]
+monitor = HDMI-0
+width = 100%
+height = 27
+fixed-center = true
 
-;override-redirect = true
+background = ${colors.base2}
+foreground = ${colors.base00}
 
-;scroll-up = bspwm-desknext
-;scroll-down = bspwm-deskprev
+line-size = 0
+line-color = #f00
 
-;scroll-up = i3wm-wsnext
-;scroll-down = i3wm-wsprev
+border-size = 4
+border-color = #00000000
+
+padding-left = 0
+padding-right = 2
+
+module-margin-left = 1
+module-margin-right = 2
+
+font-0 = Gohu GohuFont:pixelsize=10;1
+font-1 = unifont:fontformat=truetype:size=8:antialias=false;0
+font-2 = siji:pixelsize=10;1
+font-3 = SauceCodePro Nerd Font:style=Regular:pixelsize=8
+
+modules-left = bspwm
+modules-center = date
+modules-right = updates-arch-combined spotify pulseaudio wlan battery-hearts
 
 cursor-click = pointer
 cursor-scroll = ns-resize
@@ -77,29 +106,31 @@ cursor-scroll = ns-resize
 [module/bspwm]
 type = internal/bspwm
 
+pin-workspaces = true
+
 ws-icon-0 = I;
 ws-icon-1 = II;
 ws-icon-2 = III;
 ws-icon-3 = IV;
-ws-icon-4 = V;
-ws-icon-5 = VI;
-ws-icon-6 = VII;
-ws-icon-7 = VIII;
+ws-icon-4 = V;
+ws-icon-5 = VI;
+ws-icon-6 = VII;
+ws-icon-7 = VIII;
 
 label-focused = %icon%
-label-focused-background = ${colors.background}
-label-focused-foreground = #d7be69
+label-focused-background = ${colors.base2}
+label-focused-foreground = ${colors.cyan}
 label-focused-padding = 2
 
 label-occupied = %icon%
 label-occupied-padding = 2
 
 label-urgent = %icon%!
-label-urgent-background = ${colors.foreground}
+label-urgent-background = ${colors.base00}
 label-urgent-padding = 2
 
 label-empty = %icon%
-label-empty-foreground = ${colors.foreground}
+label-empty-foreground = ${colors.base00}
 label-empty-padding = 2
 
 [module/wlan]
@@ -123,19 +154,24 @@ ramp-signal-1 = 
 ramp-signal-2 = 
 ramp-signal-3 = 
 ramp-signal-4 = 
-ramp-signal-foreground = ${colors.foreground}
+ramp-signal-foreground = ${colors.base00}
 
 [module/date]
 type = internal/date
 interval = 5
 
-date = "Present Day: %d %b"
+date = "%A, %d %B"
 date-alt = " %Y-%m-%d"
 
-time = "Present Time: %H:%M"
+time = "%H:%M"
 time-alt = %H:%M:%S
 
-label = %date% %time%
+format = <label>
+format-background = ${colors.base2}
+format-foreground = ${colors.base0}
+
+label = %date% at %time%
+label-foreground = ${colors.base00}
 
 [module/pulseaudio]
 type = internal/pulseaudio
@@ -148,19 +184,62 @@ label-muted = 🔇 muted
 label-muted-foreground = #666
 
 [module/battery-hearts]
-type = custom/script
+type = internal/battery
 
-exec = ~/.config/polybar/scripts/indicate_battery.sh
+full-at = 99
 
-format-foreground = #dc143c
-format-padding = 1
+battery = BAT0
+adapter = ADP1
+
+poll-interval = 5
+
+format-charging = <animation-charging> <label-charging>
+
+format-discharging = <ramp-capacity> <label-discharging>
+
+label-charging = %percentage%%
+
+label-discharging = %percentage%%
+
+label-full = %percentage%%
+
+;ramp-capacity-0 = 
+;ramp-capacity-1 = 
+;ramp-capacity-2 = 
+;ramp-capacity-3 = 
+;ramp-capacity-4 = 
+
+ramp-capacity-0 = 
+ramp-capacity-1 = 
+ramp-capacity-2 = 
+ramp-capacity-3 = 
+ramp-capacity-4 = 
+ramp-capacity-foreground = ${colors.yellow}
+
+
+;animation-charging-0 = 
+;animation-charging-1 = 
+;animation-charging-2 = 
+;animation-charging-3 = 
+;animation-charging-4 = 
+
+animation-charging-0 = 
+animation-charging-1 = 
+animation-charging-2 = 
+animation-charging-3 = 
+animation-charging-4 = 
+animation-charging-5 = 
+animation-charging-foreground = ${colors.green}
+
+; Framerate in milliseconds
+animation-charging-framerate = 750
 
 [module/mail]
 type = custom/script
 
 exec = ~/.config/polybar/scripts/mail.sh
 
-format-foreground = #c0c0c0
+format-foreground = ${colors.base00}
 format-padding = 1
 
 [module/spotify]
@@ -168,6 +247,7 @@ type = custom/script
 interval = 1
 format-prefix = " "
 format = <label>
+format-foreground = ${colors.base00}
 exec = python ~/.config/polybar/scripts/spotify_status.py -f '{artist}: {song}'
 
 [module/updates-arch-combined]

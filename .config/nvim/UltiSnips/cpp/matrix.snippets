@@ -1,4 +1,5 @@
 snippet matrix
+
 template<class T>
 struct Mat{
   int n,m;
@@ -7,13 +8,17 @@ struct Mat{
   Mat(): n(0), m(0){}
 
   Mat(int _n, int _m): n(_n), m(_m) {
-    d = vector<vector<T>>(n,vector<mod_int>(m));
+    d = vector<vector<T>>(n,vector<T>(m));
   }
 
   Mat(const vector<vector<T>>& v): Mat((int)v.size(),(int)v[0].size()){
     for (int i = 0; i < n; i++)
       for (int j = 0; j < m; j++)
         d[i][j] = v[i][j];
+  }
+
+  vector<T>& operator[] (int index) {
+    return d[index];
   }
 
   Mat operator +(Mat other) {

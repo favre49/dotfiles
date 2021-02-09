@@ -153,12 +153,12 @@ struct LCA {
         return euler[rmq.query_index(a, b + 1)];
     }
  
-    // Returns trye if a is an ancestor of b
+    // Returns true if a is an ancestor of b
     bool is_ancestor(int a, int b) const {
         return tour_start[a] <= tour_start[b] && tour_start[b] < tour_end[a];
     }
  
-    // Check if x is on the path from a to be
+    // Check if x is on the path from a to b
     bool on_path(int x, int a, int b) const {
         return (is_ancestor(x, a) || is_ancestor(x, b)) && is_ancestor(get_lca(a, b), x);
     }
@@ -242,4 +242,27 @@ struct LCA {
         return result;
     }
 };
+endsnippet
+
+snippet binlca
+// LCA using depths
+int lca(int u, int v) { 
+  if (dep[u] < dep[v]) // make sure u > v
+    swap(u,v);
+  int dist = dep[u] - dep[v];
+  for (int i = 0; i < 20; i++) { // Jump up by dist
+    if (dist&(1<<i)) 
+      u = up[u][i];
+  }
+  if (u==v) // u is ancestor of v
+    return u;
+  // After this, they must be on the same level.
+  for (int i = 19; i >= 0; i--) {
+    if (up[u][i] != up[v][i]) {
+      v = up[v][i];
+      u = up[u][i];
+    }
+  }
+  return up[u][0];
+}
 endsnippet

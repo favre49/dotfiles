@@ -195,39 +195,37 @@ struct Bridges {
 endsnippet
 
 snippet djikstra
-const int N = 1e5+7;
-const int INF = 100000000; // Consider changing to ll
-vector<pair<int,int>> adj[N];
-int dist[N];
-int pred[N];
-int n,m;
-
-void djikstra(int src)
-{
-    fill(dist,dist+n,INF);
-    fill(pred,pred+N,-1);
-    dist[src] = 0;
-    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> q;
-    q.push({0,src});
-    while (!q.empty())
-    {
-        int v = q.top().second;
-        int d_v = q.top().first;
-        q.pop();
-        if (d_v != dist[v])
-            continue;
-        for (auto edge : adj[v])
-        {
-            int to = edge.first;
-            int len = edge.second;
-            
-            if (dist[v] + len < dist[to])
-            {
-                dist[to] = dist[v] + len;
-                pred[to] = v;
-                q.push({dist[to],to});
-            }
-        }
+struct Djikstra {
+  int n;
+  const ll INF = 1e16;
+  vector<ll> d;
+  vector<int> pred;
+  vector<vector<pii>> adj;
+  vector<vector<pii>> revadj;
+  
+  Djikstra(int _n):n(_n) {
+    d.resize(n); pred.resize(n); adj.resize(n); revadj.resize(n);
+  }
+  void add_edge(int u, int v, int w) {
+    adj[u].push_back({v,w}); revadj[v].push_back({u,w});
+  }
+  void djikstra(int s) {
+    for (int i = 0; i< n; i++) pred[i] = -1, d[i] = INF; // reset
+    d[s] = 0;
+    priority_queue<pii,vector<pii>,greater<pii>> q;
+    q.push({0,s});
+    while(!q.empty()) {
+      auto [d_v,v] = q.top();
+      q.pop();
+      if (d[v] != d_v) continue;
+      for (auto [to,len] : adj[v]) {
+        if (d[v]+len < d[to]) {
+          d[to] = d[v]+len;
+          pred[to] = v;
+          q.push({d[to],to});
+        }        
+      }
     }
-}
+  }
+};
 endsnippet

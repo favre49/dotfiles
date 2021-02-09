@@ -50,6 +50,7 @@ struct SegTreeNode {
 endsnippet
 
 snippet itsegtree
+// Remember to handle identity everywhere.
 struct S {
   int x;
 
@@ -205,6 +206,7 @@ struct segtree
 endsnippet
 
 snippet itlazysegtree
+// Remember to handle identity everywhere.
 struct S {
   int x;
   int w;
@@ -228,6 +230,7 @@ struct F{
 };
 
 // Returns the transform with parameters F and input S
+// Handle identity
 S mapping(F f, S x)
 {
   if (f.d==0)
@@ -236,7 +239,7 @@ S mapping(F f, S x)
 }
 
 // Returns f o g, which is the composition of them under the operation op
-// It is necessary that f(x) o f(y) = f(x o y)
+// It is necessary that f(x) o f(y) = f(x o y). HANDLE IDENTITY
 F composition(F f, F g)
 {
   if (f.d==0) return g;

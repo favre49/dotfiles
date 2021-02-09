@@ -1,12 +1,7 @@
-snippet pbds
-// Import <bits/extc++.h>
-typedef __gnu_pbds::tree<
-ll,
-null_type,
-less<int>,
-rb_tree_tag,
-tree_order_statistics_node_update>
-ordered_set;
+snippet orderedset
+using namespace __gnu_pbds;
+template<class T, class Compare = less<>>
+using ordered_set = tree<T,null_type,Compare,rb_tree_tag,tree_order_statistics_node_update>;
 endsnippet
 
 

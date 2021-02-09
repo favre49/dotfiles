@@ -52,10 +52,8 @@ let g:UltiSnipsExpandTrigger="<c-s>"
 let g:UltiSnipsJumpForwardTrigger="<c-j>"
 let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
-"Plug 'honza/vim-snippets'
-
 " Themes
-Plug 'lifepillar/vim-solarized8'
+Plug 'arcticicestudio/nord-vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
@@ -71,7 +69,7 @@ let g:ale_fixers = {
 " Local vimrc
 Plug 'embear/vim-localvimrc'
 let g:localvimrc_sandbox = 0 " This is technically not good, but it doesn't support makeprg
-let g:localvimrc_whitelist = ['/home/favre49/Compete/*', '/home/favre49/TempCompete/*']
+let g:localvimrc_whitelist = ['/home/favre49/Compete/*', '/home/favre49/Notes/*']
 
 call plug#end()
 
@@ -116,7 +114,7 @@ set spelllang=en_gb
 " Set theme
 syntax on
 set termguicolors
-colorscheme solarized8
+colorscheme nord
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>
@@ -192,4 +190,10 @@ function LaTeX()
 
     " Spell check
     setlocal spell
+
+    " Open pdf files in zathura
+    noremap <silent> <buffer> <leader>r :!zathura %:r.pdf &<CR><CR>
 endfunction
+
+" Clear conceal on vimtex.
+hi clear Conceal

@@ -1,4 +1,6 @@
 snippet point
+template <class T> int sgn(T x) { return (x > 0) - (x < 0); }
+
 template<class T>
 struct TPoint {
 	typedef TPoint P;
@@ -48,7 +50,7 @@ struct TLine {
     if (a==b) return p==a;
     return abs((p-a).cross(ab)) <= eps;
   }
-  bool onSeg(const P& p) {
+  bool onSeg(const P& p) const {
     if (a==b) return p == a;
     auto veca = a-p, vecb = b-p;
     return abs(veca.cross(vecb)) <= eps && veca.dot(vecb) <= eps;
@@ -81,7 +83,7 @@ struct TLine {
   // Returns 0 if parallel or collinear
   // returns 1 if unique intersections
   // returns -1 if infinite intersections
-  int intersect(const L& l, P& res)
+  int intersect(const L& l, P& res) const
   {
     if (abs(ab.cross(l.ab)) > eps) { // not parallel
       res = l.a - (l.ab)*ab.cross(l.a-a)/(ab).cross(l.ab);
@@ -94,29 +96,18 @@ struct TLine {
   // returns 1 if unique, stored in r1
   // returns 2 if infinitely many, r1 and r2 are endpoints
   // returns 0 if no intersection
-  int intersectSeg(const L& l, P& r1, P& r2)
+  vector<P> intersectSeg(const L& l) const
   {
-    if (a==b) {
-      if (l.a==l.b) {
-        if (b==l.b) { r1 = b; return 1; } // all equal
-        else return 0;
-      } else return l.intersect(*this,r1,r2);
-    }
-    P d = l.a-a;
-    auto s = ab.cross(l.ab), s1 = ab.cross(d), s2 = l.ab.cross(d);
-    if (s==0) { // parallel
-      auto b1 = a.dot(ab), c1 = b.dot(ab), b2 = l.a.dot(ab), c2 = l.b.dot(ab);
-      if (s1 || s2 || max(b1,min(b2,c2)) > min(c1,max(b2,c2)))
-        return 0;
-      r1 = min(b2,c2) < b1 ? a : (b2 < c2 ? l.a : l.b);
-      r2 = max(b2,c2) > c1 ? b : (b2 > c2 ? l.a : l.b);
-      return 2-(r1==r2);
-    }
-    if (s < 0) {s = -s; s1 = -s1; s2 = -s2;}
-    if (0 < s1 || s <= s1 || 0 < s2 || s <= s2)
-      return 0;
-    r1 = a-ab*s2/s;
-    return 1;
+    T oa = l.a.cross(l.b,a), ob = l.a.cross(l.b,b),
+      oc = a.cross(b,l.a), od = a.cross(b,l.b);
+    if (sgn(oa)*sgn(ob) < 0 && sgn(oc)*sgn(od) < 0)
+      return {(a*ob-b*oa)/(ob-oa)};
+    set<P> s;
+    if (l.onSeg(a)) s.insert(a);
+    if (l.onSeg(b)) s.insert(b);
+    if (onSeg(l.a)) s.insert(l.a);
+    if (onSeg(l.b)) s.insert(l.b);
+    return {s.begin(),s.end()};
   }
 };
 
