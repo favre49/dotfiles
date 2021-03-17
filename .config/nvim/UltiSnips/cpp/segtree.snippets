@@ -55,25 +55,12 @@ struct S {
   int x;
 
   // This should be the identity element
-  S()
-  {
+  S() {
     x = 0;
   }
   
   S(int _x):x(_x){}
 };
-
-S op(S& a, S& b)
-{
-  return {max(a.x,b.x)};
-}
-
-// Predicate for binary search. Must be true for identity.
-bool f(S /*x*/)
-{
-  // Dummy for binary search
-  return true;
-}
 
 struct segtree
 {
@@ -82,16 +69,20 @@ struct segtree
   int size;
   int log;
 
-  segtree(): segtree(0) {}
+  S op(S& a, S& b) {
+    return {max(a.x,b.x)};
+  }
 
-  segtree(int n = -1)
-  {
+  segtree(int n = -1) {
     if (n >= 0)
       init(n);
   }
 
-  void init(int n)
-  {
+  segtree(vector<S>& v) {
+    build(v);
+  }
+
+  void init(int n) {
     _n = n;
     log = 0;
     while ((1U<<log) < (unsigned int)(n)) log++;
@@ -99,8 +90,7 @@ struct segtree
     t.assign(2*size,S());
   }
 
-  void build(vector<S> v)
-  {
+  void build(vector<S>& v) {
     init((int)v.size());
     assert(_n != 0);
 
@@ -111,8 +101,7 @@ struct segtree
       t[i] = op(t[2*i],t[2*i+1]);
   }
 
-  void set(int p, S x)
-  {
+  void update(int p, S x) {
     assert(0 <= p && p < _n);
     p += size;
     t[p] = x;
@@ -120,15 +109,13 @@ struct segtree
       t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
   }
 
-  S get(int p)
-  {
+  S get(int p) {
     assert(0 <= p && p < _n);
     return t[p+size];
   }
 
   // Find result for range [l,r)
-  S query (int l, int r)
-  {
+  S query(int l, int r) {
     assert(0 <= l && l <= r && r <= _n);
     S ansl, ansr;
     l += size;
@@ -141,66 +128,6 @@ struct segtree
       r >>= 1;
     }
     return op(ansl,ansr);
-  }
-
-  /* Binary Search */
-  // Find the maximum value of r such that [l,r) is true
-  int max_right(int l)
-  {
-    assert(0 <= l && l <= _n);
-
-    if (l==_n) return _n;
-    l += size;
-    S sm;
-    do{
-      while (l%2==0)
-        l >>= 1;
-      if (!f(op(sm,t[l])))
-      {
-        while (l < size) {
-          l *= 2;
-          if (f(op(sm,t[l])))
-          {
-            sm = op(sm,t[l]);
-            l++;
-          }
-        }
-        return l - size;
-      }
-      sm = op(sm,t[l]);
-      l++;
-    } while((l&-l) != l);
-    return _n;
-  }
-
-  // This is the minimum l such that [l,r) is true
-  int min_left(int r)
-  {
-    assert(0 <= r && r <= _n);
-    if (r==0)
-      return 0;
-    r += size;
-    S sm;
-    do {
-      r--;
-      while(r>1 && (r%2)) r >>= 1;
-      if (!f(op(t[r],sm)))
-      {
-        while (r < size)
-        {
-          r = (2*r+1);
-          if (f(op(t[r],sm)))
-          {
-            sm = op(t[r],sm);
-            r--;
-          }
-        }
-        return r+1-size;
-      }
-      sm = op(t[r],sm);
-    }
-    while((r & -r) != r);
-    return 0;
   }
 };
 endsnippet
@@ -212,12 +139,11 @@ struct S {
   int w;
 
   // This should be the identity element
-  S()
-  {
+  S() {
     x = 0;
     w = 1;
   }
-  
+
   S(int _x, int _w):x(_x), w(_w){}
 };
 
@@ -229,68 +155,54 @@ struct F{
   F(int _d):d(_d){}
 };
 
-// Returns the transform with parameters F and input S
-// Handle identity
-S mapping(F f, S x)
-{
-  if (f.d==0)
-    return x;
-  return S();
-}
-
-// Returns f o g, which is the composition of them under the operation op
-// It is necessary that f(x) o f(y) = f(x o y). HANDLE IDENTITY
-F composition(F f, F g)
-{
-  if (f.d==0) return g;
-  return f;
-}
-
-S op(S a, S b)
-{
-  return S(a.x*b.w+b.x,a.w*b.w);
-}
-
-// Predicate for binary search. Must be true for identity.
-bool f(S /*x*/)
-{
-  // Dummy for binary search
-  return true;
-}
-
-struct lazy_segtree
+struct LazySegTree
 {
   int _n;
   vector<S> t;
   vector<F> lz;
+  S S_ID = S();
+  F F_ID = F();
   int size;
   int log;
 
-  lazy_segtree(): lazy_segtree(0) {}
+  // Returns the transform with parameters F and input S
+  // Handle identity
+  S mapping(F f, S x) {
+    if (f.d==0)
+      return x;
+    return S();
+  }
 
-  lazy_segtree(int n = -1)
-  {
+  // Returns f o g, which is the composition of them under the operation op
+  // It is necessary that f(x) o f(y) = f(x o y). HANDLE IDENTITY
+  F composition(F f, F g) {
+    if (f.d==0) return g;
+    return f;
+  }
+
+  S op(S a, S b) {
+    return S(a.x*b.w+b.x,a.w*b.w);
+  }
+
+  LazySegTree(int n = -1) {
     if (n >= 0)
       init(n);
   }
 
-  lazy_segtree(vector<S> v)
-  {
+  LazySegTree(vector<S>& v) {
     build(v);
   }
 
-  void init(int n)
-  {
+  void init(int n) {
     _n = n;
     log = 0;
     while ((1U<<log) < (unsigned int)(n)) log++;
     size = 1<<log;
-    t.assign(2*size,S());
-    lz = vector<F>(size);
+    t.assign(2*size,S_ID);
+    lz = vector<F>(size, F_ID);
   }
 
-  void build(vector<S> v)
-  {
+  void build(vector<S>& v) {
     init((int)v.size());
     assert(_n != 0);
 
@@ -301,21 +213,18 @@ struct lazy_segtree
       t[i] = op(t[2*i],t[2*i+1]);
   }
 
-  void all_apply(int k, F f)
-  {
+  void all_apply(int k, F f) {
     t[k] = mapping(f,t[k]);
     if (k < size) lz[k] = composition(f,lz[k]);
   }
 
-  void push(int k)
-  {
+  void push(int k) {
     all_apply(2*k,lz[k]);
     all_apply(2*k+1,lz[k]);
-    lz[k] = F();
+    lz[k] = F_ID;
   }
 
-  void set(int p, S x)
-  {
+  void update(int p, S x) {
     assert(0 <= p && p < _n);
     p += size;
     for (int i = log; i >= 1; i--)
@@ -325,8 +234,7 @@ struct lazy_segtree
       t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
   }
 
-  S get(int p)
-  {
+  S get(int p) {
     assert(0 <= p && p < _n);
     p += size;
     for (int i = log; i >= 1; i--)
@@ -335,22 +243,19 @@ struct lazy_segtree
   }
 
   // Find result for range [l,r)
-  S query (int l, int r)
-  {
+  S query (int l, int r) {
     assert(0 <= l && l <= r && r <= _n);
-    if (l==r) return S();
-    S ansl, ansr;
+    if (l==r) return S_ID;
+    S ansl = S_ID, ansr = S_ID;
     l += size;
     r += size;
 
-    for (int i = log; i >= 1; i--)
-    {
+    for (int i = log; i >= 1; i--) {
       if (((l>>i)<<i) != l) push (l>>i);
       if (((r>>i)<<i) != r) push (r>>i);
     }
 
-    while (l < r)
-    {
+    while (l < r) {
       if (l&1) ansl = op(ansl,t[l++]);
       if (r&1) ansr = op(t[--r],ansr);
       l >>= 1;
@@ -359,8 +264,7 @@ struct lazy_segtree
     return op(ansl,ansr);
   }
 
-  void apply(int p, F f)
-  {
+  void apply(int p, F f) {
     assert(0 <= p && p < _n);
     p += size;
     for (int i = log; i >= 1; i--)
@@ -370,16 +274,14 @@ struct lazy_segtree
       t[p>>i] = op(t[2*(p>>i)],t[2*(p>>i)+1]);
   }
 
-  void apply(int l, int r, F f)
-  {
+  void apply(int l, int r, F f) {
     assert(0 <= l && l <= r && r <= _n);
     if (l==r) return;
 
     l += size;
     r += size;
 
-    for (int i = log; i >= 1; i--)
-    {
+    for (int i = log; i >= 1; i--) {
       if (((l >> i)<<i)!=l) push(l>>i);
       if (((r >> i)<<i)!=r) push((r-1)>>i);
     }
@@ -396,77 +298,10 @@ struct lazy_segtree
       l = l2, r = r2;
     }
 
-    for (int i = 1; i <= log; i++)
-    {
+    for (int i = 1; i <= log; i++) {
       if (((l >> i)<<i)!=l) t[l>>i] = op(t[2*(l>>i)],t[2*(l>>i)+1]);
       if (((r >> i)<<i)!=r) t[(r-1)>>i] = op(t[2*((r-1)>>i)],t[2*((r-1)>>i)+1]);
     }
-  }
-
-  /* Binary Search */
-  // Find the maximum value of r such that [l,r) is true
-  int max_right(int l)
-  {
-    assert(0 <= l && l <= _n);
-
-    if (l==_n) return _n;
-    l += size;
-    for (int i = log; i >= 1; i--)
-      push(l>>i);
-    S sm;
-    do{
-      while (l%2==0)
-        l >>= 1;
-      if (!f(op(sm,t[l])))
-      {
-        while (l < size) {
-          push(l);
-          l *= 2;
-          if (f(op(sm,t[l])))
-          {
-            sm = op(sm,t[l]);
-            l++;
-          }
-        }
-        return l - size;
-      }
-      sm = op(sm,t[l]);
-      l++;
-    } while((l&-l) != l);
-    return _n;
-  }
-
-  // This is the minimum l such that [l,r) is true
-  int min_left(int r)
-  {
-    assert(0 <= r && r <= _n);
-    if (r==0)
-      return 0;
-    r += size;
-    for (int i = log; i >= 1; i--)
-      push((r-1)<<i);
-    S sm;
-    do {
-      r--;
-      while(r>1 && (r%2)) r >>= 1;
-      if (!f(op(t[r],sm)))
-      {
-        while (r < size)
-        {
-          push(r);
-          r = (2*r+1);
-          if (f(op(t[r],sm)))
-          {
-            sm = op(t[r],sm);
-            r--;
-          }
-        }
-        return r+1-size;
-      }
-      sm = op(t[r],sm);
-    }
-    while((r & -r) != r);
-    return 0;
   }
 };
 endsnippet
@@ -542,168 +377,242 @@ struct PersistentSegTree {
 endsnippet
 
 snippet segtree
+template<class T>
 struct SegTree {
-  using S = int; // Struct for type
-  vector<S> t; // The segtree array
-  int n; // Size of held array
-  const S ID = INT_MAX;
+  int n;
+  vector<T> t;
+  T E = 0;
 
-  // Operation of segtree
-  // TODO: check if this should be copies in the case of structs
-  S op(S a, S b) {
-    return min(a,b);
+  T comb(T a, T b) { // Segtree function
+    return a+b;
   }
-
-  SegTree(vector<S>& a) {
-    assert(a.size() != 0);
-    n = a.size();
-    t.resize(4*n);
-    build(a,1,0,n-1);
+  SegTree() {}
+  SegTree(int _n) : n(_n), t(4*n+5) {}
+  SegTree(vector<T>& bld) : n(bld.size()), t(4*n+5) {
+    build(bld,1,0,n-1);
   }
-
-  void build(vector<S>& a, int v, int tl, int tr) {
-    if (tl==tr) {
-      t[v] = a[tl];
+  void build(vector<T>& bld, int node, int tl, int tr) {
+    if (tl == tr) {
+      t[node] = bld[tl];
     }
     else {
       int tm = (tl+tr)/2;
-      build(a,2*v,tl,tm);
-      build(a,2*v+1,tm+1,tr);
-      t[v] = op(t[2*v],t[2*v+1]);
+      build(bld,2*node,tl,tm);
+      build(bld,2*node+1,tm+1,tr);
+      pull(node);
     }
   }
-
-  S query(int l, int r) {
-    return query(1,0,n-1,l,r);
-  }
-  S query(int v, int tl, int tr, int l, int r) {
-    if (l > r) return ID;
-    if (l==tl && r==tr)
-      return t[v];
+  void pull(int node) { t[node] = comb(t[2*node], t[2*node+1]); }
+  T query(int l, int r) {return query(l, r,1,0,n-1);}
+  T query(int l, int r, int node, int tl, int tr) {
+    if (r < tl || tr < l) return E;
+    if (l <= tl && tr <= r) return t[node];
     int tm = (tl+tr)/2;
-    return op(query(2*v,tl,tm,l,min(r,tm)),query(2*v+1,tm+1,tr,max(l,tm+1),r));
+    return comb(query(l,r,2*node,tl,tm), query(l,r,2*node+1,tm+1,tr));
   }
-
-  void update(int pos, S new_val) {
-    update(1,0,n-1,pos,new_val);
-  }
-  void update(int v, int tl, int tr, int pos, S new_val) {
-    if (tl==tr) {
-      t[v] = new_val;
+  void update(int p, T val) { return update(p,val,1,0,n-1); }
+  void update(int p, T val, int node, int tl, int tr) {
+    if (tl == tr) {
+      t[node] += val;
+      return;
     }
-    else {
-      int tm = (tl+tr)/2;
-      if (pos <= tm)
-        update(2*v,tl,tm,pos,new_val);
-      else
-        update(2*v+1,tm+1,tr,pos,new_val);
-      t[v] = op(t[2*v],t[2*v+1]);
-    }
+    int tm = (tl+tr)/2;
+    if (p <= tm) update(p,val,2*node,tl,tm);
+    else update(p,val,2*node+1,tm+1,tr);
+    pull(node);
   }
 };
 endsnippet
 
 snippet lazysegtree
-// Recursive lazy segment tree. About 2x slower than iterative!
+// My simple use lazy segtree
+template<class T>
 struct LazySegTree {
-  using S = ll; // Struct for type
-  using T = ll; // Type for range update
-  vector<S> t; // The segtree array
-  vector<T> lz; // Lazy propagation array
-  int n; // Size of held array
-  const S E = INT_MAX;
-  const T ID = 0;
+  int n;
+  vector<T> t, lz;
+  T E = 0;
+  T ID = 0;
 
-  // Operation of segtree
-  S op(S a, S b) {
-    return min(a,b);
+  T comb(T a, T b) { // Segtree function
+    return a+b;
   }
-  // Range update operation
-  S map(S a, T b) {
-    a += b;
-    return a;
+  void push(int node, int l, int r) { // Propagation
+    t[node] += (r-l+1)*lz[node];
+    if (l != r) { // Propagate
+      for (int it = 0; it < 2; it++){
+        lz[2*node+it] += lz[node];
+      }
+    }
+    lz[node] = ID;
   }
-  T compose(T ne, T ol) {
-    ne += ol;
-    return ne;
+  LazySegTree() {}
+  LazySegTree(int _n) : n(_n), t(4*n+5), lz(4*n+5) {
   }
-
-  void push(int v) {
-    t[2*v] = map(t[2*v],lz[v]) ;
-    lz[2*v] = compose(lz[v],lz[2*v]);
-    t[2*v+1] = map(t[2*v+1],lz[v]) ;
-    lz[2*v+1] = compose(lz[v],lz[2*v+1]);
-    lz[v]= ID;
+  LazySegTree(vector<T>& bld) : n(bld.size()), t(4*n+5), lz(4*n+5) {
+    build(bld,1,0,n-1);
   }
-
-  LazySegTree(vector<S>& a) {
-    assert(a.size() != 0);
-    n = a.size();
-    t = vector<S>(4*n,E);
-    lz = vector<T>(4*n,ID);
-    build(a,1,0,n-1);
-  }
-
-  void build(vector<S>& a, int v, int tl, int tr) {
-    if (tl==tr) {
-      t[v] = a[tl];
+  void build(vector<T>& bld, int node, int tl, int tr) {
+    if (tl == tr) {
+      t[node] = bld[tl];
     }
     else {
       int tm = (tl+tr)/2;
-      build(a,2*v,tl,tm);
-      build(a,2*v+1,tm+1,tr);
-      t[v] = op(t[2*v],t[2*v+1]);
+      build(bld,2*node,tl,tm);
+      build(bld,2*node+1,tm+1,tr);
+      pull(node);
     }
   }
-
-  // Range query in [l,r]
-  S query(int l, int r) {
-    return query(1,0,n-1,l,r);
-  }
-  S query(int v, int tl, int tr, int l, int r) {
-    if (l > r) return E;
-    if (l==tl && r==tr)
-      return t[v];
-    push(v);
+  void pull(int node) { t[node] = comb(t[2*node], t[2*node+1]); }
+  void apply(int l, int r, T val) { apply(l,r,val,1,0,n-1); }
+  void apply(int l, int r, T val, int node, int tl, int tr) {
+    push(node,tl,tr);
+    if (r < tl || tr < l) return;
+    if (l <= tl && tr <= r) {
+      lz[node] = val;
+      push(node,tl,tr);
+      return;
+    }
     int tm = (tl+tr)/2;
-    return op(query(2*v,tl,tm,l,min(r,tm)),query(2*v+1,tm+1,tr,max(l,tm+1),r));
+    apply(l,r,val,2*node,tl,tm);
+    apply(l,r,val,2*node+1,tm+1,tr);
+    pull(node);
   }
+  T query(int l, int r) {return query(l, r,1,0,n-1);}
+  T query(int l, int r, int node, int tl, int tr) {
+    push(node,tl,tr);
+    if (r < tl || tr < l) return E;
+    if (l <= tl && tr <= r) return t[node];
+    int tm = (tl+tr)/2;
+    return comb(query(l,r,2*node,tl,tm), query(l,r,2*node+1,tm+1,tr));
+  }
+};
+endsnippet
 
-  // Point update
-  void update(int pos, S new_val) {
-    update(1,0,n-1,pos,new_val);
-  }
-  void update(int v, int tl, int tr, int pos, S new_val) {
-    if (tl==tr) {
-      t[v] = new_val;
+snippet lazysegtree_alt
+// More general lazy segtree
+struct LazySegTree {
+  struct F { // Lazy update
+    ll inc = 0;
+    F() {} // identity
+    F(int x) : inc(x) {}
+    F& operator *= (const F& a) { // Compose a onto this (a is new)
+      inc += a.inc;
+      return *this;
     }
-    else {
-      int tm = (tl+tr)/2;
-      push(v);
-      if (pos <= tm)
-        update(2*v,tl,tm,pos,new_val);
-      else
-        update(2*v+1,tm+1,tr,pos,new_val);
-      t[v] = op(t[2*v],t[2*v+1]);
+  };
+  struct T { // Segtree data
+    ll sz = 1, sum = 0;
+    T() {} // identity
+    T(int x) : sum(x) {}
+    friend T operator+(const T& a, const T& b) { // Combine two data
+      T res;
+      res.sz = a.sz + b.sz;
+      res.sum = a.sum + b.sum;
+      return res;
     }
-  }
+    T& operator*=(const F& a) { // Apply lazy onto data
+      sum += sz*a.inc;
+      return *this;
+    }
+  };
+  int n;
+  vector<T> t;
+  vector<F> lz;
 
-  // Range update
-  void apply(int l, int r, T app) {
-    apply(1,0,n-1,l,r,app);
+  LazySegTree() {}
+  LazySegTree(vector<T>& v) {
+    n = 1;
+    while(n < v.size()) n *= 2;
+    t.resize(2*n);
+    lz.resize(2*n);
+    for (int i = 0; i < v.size(); i++) t[n+i] = v[i];
+    for (int i = n-1; i >= 1; i--) pull(i);
   }
-  void apply(int v, int tl, int tr, int l, int r, T app) {
-    if (l>r) return;
-    if (l==tl && r==tr) {
-      t[v] = map(t[v],app);
-      lz[v] = compose(app,lz[v]);
-    } else {
-      push(v);
-      int tm = (tl+tr)/2;
-      apply(2*v,tl,tm,l,min(r,tm),app);
-      apply(2*v+1,tm+1,tr,max(l,tm+1),r,app);
-      t[v] = op(t[2*v],t[2*v+1]);
+  
+  void push(int node) {
+    t[node] *= lz[node];
+    if (node < n) {
+      lz[2*node] *= lz[node];
+      lz[2*node+1] *= lz[node];
     }
+    lz[node] = F();
+  }
+  void pull(int node) {
+    t[node] = t[2*node] + t[2*node+1];
+  }
+  T query(int l, int r) {
+    return query(l,r,1,0,n-1);
+  }
+  T query(int l, int r, int node, int tl, int tr) {
+    push(node);
+    if (tr < l || tl > r) return T();
+    if (l <= tl && tr <= r) return t[node];
+    int tm = (tl+tr)/2;
+    return query(l,r,2*node,tl,tm) + query(l,r,2*node+1,tm+1,tr);
+  }
+  void apply(int l, int r, F val) {
+    apply(l,r,val,1,0,n-1);
+  }
+  void apply(int l, int r, F val, int node, int tl, int tr) {
+    push(node);
+    if (tr < l || tl > r) return;
+    if (l <= tl && tr <= r) {
+      lz[node] = val;
+      push(node);
+      return;
+    }
+    int tm = (tl+tr)/2;
+    apply(l,r,val,2*node,tl,tm);
+    apply(l,r,val,2*node+1,tm+1,tr);
+    pull(node);
+  }
+};
+endsnippet
+
+snippet segtree_alt
+// More general segtree
+struct SegTree {
+  struct T { // Segtree data
+    ll sz = 0, sum = 0;
+    T() {} // identity
+    T(int x) : sum(x) {}
+    friend T operator+(const T& a, const T& b) { // Combine two data
+      T res;
+      res.sz = a.sz + b.sz;
+      res.sum = a.sum + b.sum;
+      return res;
+    }
+  };
+  int n;
+  vector<T> t;
+  SegTree() {}
+  SegTree(vector<T>& v) {
+    n = 1;
+    while(n < v.size()) n *= 2;
+    t.resize(2*n);
+    for (int i = 0; i < v.size(); i++) t[n+i] = v[i];
+    for (int i = n-1; i >= 1; i--) pull(i);
+  }
+  void pull(int node) {
+    t[node] = t[2*node] + t[2*node+1];
+  }
+  T query(int l, int r) { return query(l,r,1,0,n-1); }
+  T query(int l, int r, int node, int tl, int tr) {
+    if (tr < l || tl > r) return T();
+    if (l <= tl && tr <= r) return t[node];
+    int tm = (tl+tr)/2;
+    return query(l,r,2*node,tl,tm) + query(l,r,2*node+1,tm+1,tr);
+  }
+  void update(int p, T x) { return update(p,x,1,0,n-1); }
+  void update(int p, T x, int node, int tl, int tr) {
+    if (tl == tr) {
+      t[node] = t[node] + x;
+      return;
+    }
+    int tm = (tl+tr)/2;
+    if (p <= tm) update(p,x,2*node,tl,tm);
+    else update(p,x,2*node+1,tm+1,tr);
+    pull(node);
   }
 };
 endsnippet

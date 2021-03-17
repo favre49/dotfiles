@@ -55,45 +55,70 @@ for (int k = 0; k < n; k++) {
 endsnippet
 
 snippet scc
-// Finds the strongly connected components of a directed graph
-// comps stores the number of components
-// comp stores the component number of any part, ONE INDEXED
+// Components is always in reverse topological order!
 struct SCC {
+  // Graph data
+  int n;
   vector<vector<int>> adj;
-  vector<int> low, dtime, comp;
-  vector<bool> inst;
-  stack<int> st;
-  int comps, timer, _n;
 
-  SCC(int n):_n(n) {
-    comps = timer = 0;
-		adj.resize(n);
-    dtime = vector<int>(n,-1);
-    low = comp = vector<int>(n);
-    inst = vector<bool>(n);
+  // Tarjan necessities
+  vector<int> st;
+  vector<bool> in_st;
+  int st_sz = 0, tour;
+  vector<int> tour_index, low_link;
+
+  // Component information
+  vector<vector<int>> components;
+  vector<int> which_component;
+
+  SCC(int _n):n(_n) {
+    adj.resize(n);
   }
+  SCC(vector<vector<int>>& _adj):n(_adj.size()), adj(_adj) {}
+
   void add_edge(int u, int v) { adj[u].push_back(v); }
-  void scc() {
-    for (int i = 0; i < _n; i++)
-      if (dtime[i]==-1) tarjan(i);
-  }
-  void tarjan(int u) {
-    low[u] = dtime[u] = ++timer;
-    st.push(u); inst[u] = true;
-    for (int v : adj[u]) {
-      if (dtime[v]==-1) {
-        tarjan(v);
-        low[u] = min(low[u],low[v]);
+
+  void tarjan(int v) {
+    tour_index[v] = tour++;
+    low_link[v] = tour_index[v];
+    st[st_sz++] = v;
+    in_st[v] = true;
+
+    for (int u : adj[v]){
+      if (tour_index[u] < 0) {
+        tarjan(u);
+        low_link[v] = min(low_link[v], low_link[u]);
+      } else if (in_st[u]) {
+        low_link[v] = min(low_link[v], tour_index[u]);
       }
-      else if (inst[v])
-        low[u] = min(low[u],dtime[v]);
     }
-    if (dtime[u]==low[u]) {
-      comps++; int v = -1;
+
+    if (low_link[v] == tour_index[v]) {
+      components.emplace_back();
+      vector<int>& component = components.back();
+      int x;
       do {
-        v = st.top(); st.pop();
-        inst[v] = false, comp[v] = comps;
-      } while(u != v);
+        x = st[--st_sz];
+        in_st[x] = false;
+        which_component[x] = (int)components.size()-1;
+        component.push_back(x);
+      } while(x != v);
+    }
+  }
+
+  void scc() {
+    tour_index.assign(n,-1);
+    low_link.assign(n,-1);
+    which_component.assign(n,-1);
+
+    st_sz = 0;
+    st.resize(n);
+    in_st.resize(n);
+    tour = 0;
+
+    for (int i = 0; i < n; i++){
+      if (tour_index[i] < 0)
+        tarjan(i);
     }
   }
 };

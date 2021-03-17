@@ -49,3 +49,32 @@ struct RMQ {
 };
 endsnippet
 
+snippet monoq
+template<typename T>
+struct MonoQueue {
+    deque<pair<T, int>> values;
+    int current_index = 0;
+ 
+    bool better(const T &a, const T &b) const {
+        return a > b;
+    }
+ 
+    // Adds a value and returns its index.
+    int add(const T &x) {
+        while (!values.empty() && !better(values.back().first, x))
+            values.pop_back();
+ 
+        values.emplace_back(x, current_index);
+        return current_index++;
+    }
+ 
+    // Queries for the maximum (minimum) with index at least the given `index`.
+    T query(int index) {
+        while (!values.empty() && values.front().second < index)
+            values.pop_front();
+ 
+        assert(!values.empty());
+        return values.front().first;
+    }
+};
+endsnippet
