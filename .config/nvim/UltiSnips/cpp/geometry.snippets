@@ -8,8 +8,8 @@ struct TPoint {
   static constexpr T eps = static_cast<T>(1e-9);
 	explicit TPoint(T x=0, T y=0) : x(x), y(y) {}
 	bool operator<(P p) const { return tie(x,y) < tie(p.x,p.y); }
-	bool operator==(P p) const { 
-		// return tie(x,y)==tie(p.x,p.y); 
+	bool operator==(P p) const {
+		// return tie(x,y)==tie(p.x,p.y);
 		return abs(x-p.x) <= eps && abs(y-p.y) <= eps;
 	}
 	P operator+(P p) const { return P(x+p.x, y+p.y); }

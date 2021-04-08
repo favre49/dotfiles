@@ -61,5 +61,40 @@ struct Mat{
     }
     return res;
   }
+
+  // Get the determinant of the matrix in O(N^3)
+  // Remember to make all n into n-1 when using with Kirchhoff's theorem
+  T det() {
+    assert(n == m);
+    T prod = 1;
+    Mat st(n,n);
+    st.d = d;
+    auto elim = [this](int a, int c){
+      T x = d[c][a];
+      for (int i = a; i < n; i++)
+        d[c][i] -= x*d[a][i];
+    };
+    for (int i = 0; i < n; i++){
+      bool done = false;
+      for (int j = i; j < n; j++){
+        if (d[j][i] != 0) {
+          done = 1;
+          if (j != i)
+            swap(d[j], d[i]);
+          if ((j-i)%2==1)
+            prod *= -1;
+          prod = prod*d[i][i];
+          T x = d[i][i].inv();
+          for (int k = i; k < n; k++)
+            d[i][k] *= x;
+          for (int k = i+1; k < n; k++)
+            elim(i,k);
+        }
+      }
+      if (!done) return 0;
+    }
+    d = st.d;
+    return prod;
+  }
 };
 endsnippet

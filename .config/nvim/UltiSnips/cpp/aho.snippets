@@ -1,4 +1,11 @@
 snippet aho
+// Works in O(mk) time, where m is total string size and k is the size of the alphabet
+// Given a set of pattern strings P and a text T, can find all matches of P in T
+// To use AC automaton, the following steps for a given character:
+// 1. If there is no edge, follow suffix link. If you are at root, stop
+// 2. If there is an edge, take it
+// 3. If this is a terminal state, output that pattern
+// 4. Output all words in the chain of output links from this node.
 struct Aho {
   static const int ALPHABET = 26;
 
@@ -100,7 +107,7 @@ struct Aho {
       word_indices_by_depth[--depth_freq[words[i].size()]] = i;
 
     // Solve suffix parents by traversing in the order of depth (BFS order)
-    vector<int> q = {0}; 
+    vector<int> q = {0};
     for (int i = 0; i < (int)q.size(); i++) {
       int curr = q[i];
       for (char c = 'a'; c < 'a'+ALPHABET;c++) {

@@ -8,7 +8,7 @@ struct HLD {
   vector<ll> val; // Read into this
   LazySegTree<ll> T;
 
-  HLD(int _n, bool _usingEdge = false) : n(_n), adj(n), parent(n), root(n), 
+  HLD(int _n, bool _usingEdge = false) : n(_n), adj(n), parent(n), root(n),
   depth(n), sz(n), pos(n), usingEdge(_usingEdge), val(n),T(n) {}
 
   void add_edge(int u, int v) {

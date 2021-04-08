@@ -81,7 +81,7 @@ endsnippet
 snippet pushrelabel
 template <class F> struct PushRelabel {
   struct Edge { int to, rev; F flow; };
-  const F INF = numeric_limits<F>::max();  
+  const F INF = numeric_limits<F>::max();
   int n, s, t, highest, work;
   vector<vector<Edge>> adj;
   vector<vector<int>> lst, gap;
@@ -119,14 +119,14 @@ template <class F> struct PushRelabel {
     work = 0;
     for (int i = 0; i < n; i++)
       height[i] = n, cnt[i] = 0;
-    for (int i = 0; i < highest; i++) 
+    for (int i = 0; i < highest; i++)
       lst[i].clear(), gap[i].clear();
     height[t] = 0;
     queue<int> q({t});
     while (!q.empty()) {
       int v = q.front();
       q.pop();
-      for (auto& e : adj[v]) 
+      for (auto& e : adj[v])
         if (height[e.to] == n && adj[e.to][e.rev].flow > 0)
           q.push(e.to), update_height(e.to, height[v] + 1);
       highest = height[v];
@@ -141,7 +141,7 @@ template <class F> struct PushRelabel {
   }
   void discharge(int v) {
     int nh = n;
-    for (auto& e : adj[v]) 
+    for (auto& e : adj[v])
       if (e.flow > 0)
         if (height[v] == height[e.to] + 1) {
           push(v, e);
@@ -149,7 +149,7 @@ template <class F> struct PushRelabel {
         } else {
           nh = std::min(nh, height[e.to] + 1);
         }
-    if (cnt[height[v]] > 1) 
+    if (cnt[height[v]] > 1)
       update_height(v, nh);
     else {
       for (int i = height[v]; i <= highest; i++) {
@@ -167,7 +167,7 @@ template <class F> struct PushRelabel {
       excess[i] = 0;
     excess[s] = INF, excess[t] = -INF;
     global_relabel();
-    for (auto& e : adj[s]) 
+    for (auto& e : adj[s])
       push(s, e);
     for (; highest >= 0; highest--)
       while (!lst[highest].empty()) {
