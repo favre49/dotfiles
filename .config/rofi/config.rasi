@@ -5,5 +5,5 @@ configuration {
 	columns: 1;
 	font: "mono 12";
 	matching: "fuzzy";
-	theme: "darklain";    
+	theme: "dracula";    
 }

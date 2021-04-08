@@ -178,7 +178,7 @@
 
   # Default background color.
   #typeset -g POWERLEVEL9K_BACKGROUND=#44475a
-  typeset -g POWERLEVEL9K_BACKGROUND=#eee8d5
+  typeset -g POWERLEVEL9K_BACKGROUND=#4c566a
 
   # Separator between same-color segments on the left.
   typeset -g POWERLEVEL9K_LEFT_SUBSEGMENT_SEPARATOR='%242F\uE0B1'

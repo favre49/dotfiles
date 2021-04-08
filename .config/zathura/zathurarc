@@ -1,5 +1,5 @@
 # Change color options.
-set recolor true
+#set recolor true
 set recolor-darkcolor "#f8f8f2"
 set recolor-lightcolor "#282a36"
 

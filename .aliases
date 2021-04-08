@@ -10,7 +10,7 @@ alias config='/usr/bin/git --git-dir=/home/favre49/.cfg/ --work-tree=/home/favre
 alias mkdir='mkdir -pv'
 
 # Better diff
-alias diff=`colordiff`
+#alias diff=`colordiff`
 
 # History shortcut
 alias h='history'
@@ -24,3 +24,18 @@ alias today='date +"%d-%m-%Y"'
 
 # Connectivity check
 alias ping='ping -c 5'
+
+# Run matlab with the right thingy
+alias prepmatlab='export _JAVA_AWT_WM_NONPARENTING=1'
+alias runmatlab='env MATLAB_JAVA=/usr/lib/jvm/java-8-openjdk/jre matlab'
+
+earmic()
+{
+    if [ "$1" = "off" ]; then
+        profile="a2dp_sink"a
+    else
+        profile="headset_head_unit"
+    fi
+
+    pacmd set-card-profile bluez_card.F4_BC_DA_5B_79_10 $profile
+}

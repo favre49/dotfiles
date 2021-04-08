@@ -4,4 +4,4 @@ Description=Mailbox synchronization service
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/mbsync -Va
-ExecStartPost=/home/favre49/Scripts/notmuch-hook.sh
+ExecStartPost=/home/favre49/.scripts/notmuch-hook.sh
