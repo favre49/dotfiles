@@ -142,8 +142,8 @@ nmap <C-_> <leader>c<Space>
 vmap <C-_> <leader>c<Space>
 
 " Easy escape
-inoremap jk <Esc>
-inoremap kj <Esc>
+"inoremap jk <Esc>
+"inoremap kj <Esc>
 
 " Fast semicolons
 inoremap ;; <C-o>A;
