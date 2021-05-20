@@ -286,3 +286,12 @@ struct TPolygon {
   }
 };
 endsnippet
+
+snippet polarsort
+  sort(p.begin(),p.end(),[](Point a, Point b){
+      const Point origin(0,0);
+      bool ba = a < origin, bb = b < origin;
+      if (ba != bb) return ba < bb;
+      return a.cross(b) > 0;
+  });
+endsnippet
