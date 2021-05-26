@@ -169,6 +169,9 @@ autocmd FileType markdown :call Markdown()
 " If it's a LaTex file, let's load the LaTeX keybindings
 autocmd Filetype latex,tex :call LaTeX()
 
+" Indent Lambda expressions properly in C++
+autocmd BufEnter *.cpp :setlocal cindent cino=j1,(0,ws,Ws
+
 " Keybindings for Markdown Note-taking
 function Markdown()
     setlocal spell
