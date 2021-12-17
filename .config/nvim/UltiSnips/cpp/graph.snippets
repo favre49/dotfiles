@@ -55,12 +55,15 @@ for (int k = 0; k < n; k++) {
 endsnippet
 
 snippet bcc
+// Source : bqi343
+// Tested On: CF-102835-I
 // Find biconnected components
 // vertex_sets store the vertices in each biconnected component. If a vertex
 // is contained in more than one component, it is an articulation point
 // components stores the edges in each BCC. If it is of size 1, that edge is
 // a bridge.
 struct BCC {
+  using pii = pair<int,int>;
   int n, timer;
   vector<vector<pii>> adj;
   vector<pii> edges;
@@ -117,7 +120,9 @@ struct BCC {
 endsnippet
 
 snippet scc
-// Components is always in reverse topological order!
+// Source : neal
+// Tested on : Yosupo Strongly Connected Components
+// Components are always in reverse topological order
 struct SCC {
   // Graph data
   int n;
@@ -168,7 +173,7 @@ struct SCC {
     }
   }
 
-  void scc() {
+  void build() {
     tour_index.assign(n,-1);
     low_link.assign(n,-1);
     which_component.assign(n,-1);
@@ -187,24 +192,28 @@ struct SCC {
 endsnippet
 
 snippet djikstra
-struct Djikstra {
+// Source : Me
+// Tested on : Yosupo Shortest Path
+// Use __gnu_pbds::priority_queue to get tiny speed increase
+struct Dijkstra {
+  using ll = int64_t;
+  using dist_type = pair<ll,int>;
   int n;
-  const ll INF = 1e16;
+  const ll INF = 1e18;
   vector<ll> d;
   vector<int> pred;
-  vector<vector<pii>> adj;
-  vector<vector<pii>> revadj;
+  vector<vector<pair<int,ll>>> adj;
 
-  Djikstra(int _n):n(_n) {
-    d.resize(n); pred.resize(n); adj.resize(n); revadj.resize(n);
+  Dijkstra(int _n):n(_n) {
+    d.resize(n); pred.resize(n); adj.resize(n);
   }
-  void add_edge(int u, int v, int w) {
-    adj[u].push_back({v,w}); revadj[v].push_back({u,w});
+  void add_edge(int u, int v, ll w) {
+    adj[u].push_back({v,w});
   }
-  void djikstra(int s) {
+  void dijkstra(int s) {
     for (int i = 0; i< n; i++) pred[i] = -1, d[i] = INF; // reset
     d[s] = 0;
-    priority_queue<pii,vector<pii>,greater<pii>> q;
+    priority_queue<dist_type,vector<dist_type>,greater<dist_type>> q;
     q.push({0,s});
     while(!q.empty()) {
       auto [d_v,v] = q.top();
@@ -286,6 +295,121 @@ struct RollbackDSU {
 
   int time() {
     return q.size();
+  }
+};
+endsnippet
+
+snippet eulerwalk
+// Source: bqi343
+// Tested On: CF 1361 C
+// Find Eulerian path starting at src in O(N+M).
+// Returns vector of {vertex,label of edge to vertex}.
+// Second element of first pair is -1.
+// WARNINGS:
+// 1. Check if graph is Eulerian before using this.
+// 2. Ensure you've set it to directed if it's directed
+struct EulerWalk {
+  using pii = pair<int,int>;
+  int n;
+  vector<vector<pii>> g; // the graph
+  vector<vector<pii>::iterator> its;
+  vector<pii> edges; // Edges stored, indexed by label
+  vector<bool> used;
+  bool directed;
+
+  EulerWalk(int _n, bool _directed = false):n(_n),g(_n),its(_n),directed(_directed) {}
+
+  void add_edge(int u, int v) {
+    int m = used.size();
+    used.push_back(0);
+    edges.push_back({u,v});
+    g[u].push_back({v,m});
+    if (!directed)
+      g[v].push_back({u,m});
+  }
+
+  vector<pii> walk(int src = 0) {
+    for (int i = 0; i < n; i++) its[i] = g[i].begin();
+    vector<pair<pii,int>> ret, s = {{{src,-1},-1}};
+    while(!s.empty()) {
+      int x = s.back().first.first;
+      auto& it = its[x], en = g[x].end();
+      while(it != en && used[it->second]) it++;
+      if (it == en) {
+        if (!ret.empty() && ret.back().first.second != x)
+          return {};
+        ret.push_back(s.back());
+        s.pop_back();
+      }
+      else {
+        s.push_back({{it->first,x},it->second});
+        used[it->second] = 1;
+      }
+    }
+    if (ret.size() != used.size()+1) return {};
+    vector<pii> ans;
+    for (auto t : ret) ans.push_back({t.first.first,t.second});
+    reverse(ans.begin(),ans.end());
+    return ans;
+  }
+};
+endsnippet
+
+snippet centroid
+// Source: Me
+// Complexity: O(nlogn)
+// Basic template for centroid decomposition.
+struct Centroid {
+  int n;
+  vector<vector<int>> g;
+  vector<bool> done;
+  vector<int> sz, par, cen, lev;
+
+  Centroid(int _n):n(_n),g(n),done(n),sz(n),par(n,-1),cen(n),lev(n) {
+  }
+
+  void add_edge(int u, int v) {
+    g[u].push_back(v);
+    g[v].push_back(u);
+  }
+
+  void dfs(int s) {
+    sz[s] = 1;
+    for (auto& u : g[s]) {
+      if (u == par[s] || done[u]) continue;
+      par[u] = s;
+      dfs(u);
+      sz[s] += sz[u];
+    }
+  }
+
+  int get_centroid(int s) {
+    par[s] = -1;
+    dfs(s);
+    int tot = sz[s];
+    while(true) {
+      pair<int,int> mx = {0,0};
+      for (auto& u : g[s]) {
+        if (u == par[s] || done[u]) continue;
+        mx = max(mx,{sz[u],u});
+      }
+      if (2*mx.first <= tot) return s;
+      s = mx.second;
+    }
+    assert(false);
+    return -1;
+  }
+
+  void build(int s, int centroid = -1) {
+    done[s = get_centroid(s)] = 1;
+    cen[s] = centroid, lev[s] = (centroid==-1?0:lev[centroid]+1);
+  
+    // Build necessary data structures here
+
+    for (auto& u : g[s]) {
+      if (!done[u])
+        build(u,s);
+    }
   }
 };
 endsnippet

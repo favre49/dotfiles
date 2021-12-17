@@ -1,11 +1,4 @@
 snippet debug
-#include "bits/stdc++.h"
-
-using namespace std;
-using ll = long long;
-using pii = pair<int,int>;
-
- 
 template <typename A, typename B>
 string to_string(pair<A, B> p);
  
@@ -93,58 +86,4 @@ void debug_out(Head H, Tail... T) {
 #else
 #define debug(...) 42
 #endif
-
-int main()
-{
-  ios_base::sync_with_stdio(false);
-  cin.tie(NULL);
-  ll n,k,m;
-  cin >> n >> k >> m;
-  vector<array<int,2>> b;
-  for (int i =0; i < n; i++) {
-    int x;
-    cin >> x;
-    if (b.empty() || b.back()[0] != x) {
-      b.push_back({x,0});
-    }
-    b.back()[1]++;
-    if (b.back()[1] == k)
-      b.pop_back();
-  }
-  n = b.size();
-  ll len = 0;
-  for (auto x : b)
-    len += x[1];
-  if (b.size() == 0 || m == 1) {
-    cout << len << '\n';
-    return 0;
-  }
-  ll r = 0, er = 0;
-  for (int i =0 ; i < n; i++) {
-    if (b[n-1-i][0] != b[i][0]) break;
-    int sum = b[n-1-i][1] + b[i][1];
-    er += sum/k*k;
-    sum %= k;
-    if (sum) break;
-    r++;
-  }
-  if (r==n) {
-    cout << len*(m%2) << '\n';
-    return 0;
-  }
-  else if (2*r+1 == n) {
-    ll sum = b[r][1]*m;
-    sum %= k;
-    if (sum)
-      cout << len - b[r][1]+sum << '\n';
-    else
-      cout << 0 << '\n';
-    return 0;
-  }
-  else {
-    assert(2*r < n);
-    cout << len*m - er*(m-1) << '\n';
-    return 0;
-  }
-}
 endsnippet

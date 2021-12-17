@@ -15,14 +15,14 @@ let g:rainbow_active = 1
 Plug 'preservim/nerdtree'
 
 " Autocomplete
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clangd-completer --system-libclang' }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --system-libclang' }
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_global_ycm_extra_conf = '/home/favre49/.vim/plugged/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py' 
 let g:ycm_confirm_extra_conf = 0
 Plug 'rdnetto/YCM-Generator', { 'branch' : 'stable' }
 
 " A git wrapper so awesome it shouldn't be legal
-Plug 'tpope/vim-fugitive'
+"Plug 'tpope/vim-fugitive'
 
 " Fuzzy searching.
 Plug 'junegunn/fzf'
@@ -31,6 +31,7 @@ Plug 'junegunn/fzf.vim'
 " LaTeX support
 Plug 'lervag/vimtex'
 let g:tex_flavor='latex'
+let g:Tex_BibtexFlavor = 'biber'
 let g:vimtex_view_method='zathura'
 let g:vimtex_quickfix_mode=0
 set conceallevel=1
@@ -53,7 +54,7 @@ let g:UltiSnipsJumpForwardTrigger="<c-j>"
 let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
 " Themes
-Plug 'arcticicestudio/nord-vim'
+Plug 'sainnhe/gruvbox-material'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
@@ -71,6 +72,11 @@ Plug 'embear/vim-localvimrc'
 let g:localvimrc_sandbox = 0 " This is technically not good, but it doesn't support makeprg
 let g:localvimrc_whitelist = ['/home/favre49/Compete/*', '/home/favre49/Notes/*']
 
+" Better syntax highlighting
+" Incurs a 50 ms penalty. nvim-treesitter may be better, but needs a nightly
+" build
+Plug 'sheerun/vim-polyglot'
+let g:polyglot_disabled = ['autoindent']
 call plug#end()
 
 " Tab Behavior.
@@ -114,7 +120,10 @@ set spelllang=en_gb
 " Set theme
 syntax on
 set termguicolors
-colorscheme nord
+set background=dark
+let g:gruvbox_material_background = 'hard'
+let g:airline_theme = 'gruvbox_material'
+colorscheme gruvbox-material
 
 " Use Leader+Space to clear search.
 nnoremap <leader><space> :noh<cr>

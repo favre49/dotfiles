@@ -135,16 +135,17 @@ endsnippet
 snippet itlazysegtree
 // Remember to handle identity everywhere.
 struct S {
-  int x;
-  int w;
+  int sz,mx,mn,sum;
 
   // This should be the identity element
   S() {
-    x = 0;
-    w = 1;
+    sz = 1;
+    sum = 0;
+    mx = -1e8;
+    mn = 1e8;
   }
 
-  S(int _x, int _w):x(_x), w(_w){}
+  S(int _x):sz(1),mx(_x),mn(_x),sum(0){}
 };
 
 // Paremeters of the function we are applying on the range.
@@ -160,28 +161,32 @@ struct LazySegTree
   int _n;
   vector<S> t;
   vector<F> lz;
-  S S_ID = S();
-  F F_ID = F();
   int size;
   int log;
 
   // Returns the transform with parameters F and input S
   // Handle identity
   S mapping(F f, S x) {
-    if (f.d==0)
-      return x;
-    return S();
+    x.sum += f.d*x.sz;
+    x.mn += f.d;
+    x.mx += f.d;
+    return x;
   }
 
   // Returns f o g, which is the composition of them under the operation op
   // It is necessary that f(x) o f(y) = f(x o y). HANDLE IDENTITY
   F composition(F f, F g) {
-    if (f.d==0) return g;
+    f.d += g.d;
     return f;
   }
 
   S op(S a, S b) {
-    return S(a.x*b.w+b.x,a.w*b.w);
+    S res;
+    res.sum = a.sum+b.sum;
+    res.sz = a.sz+b.sz;
+    res.mx = max(a.mx,b.mx);;
+    res.mn = min(a.mn,b.mn);;
+    return res;
   }
 
   LazySegTree(int n = -1) {
@@ -198,8 +203,8 @@ struct LazySegTree
     log = 0;
     while ((1U<<log) < (unsigned int)(n)) log++;
     size = 1<<log;
-    t.assign(2*size,S_ID);
-    lz = vector<F>(size, F_ID);
+    t.assign(2*size,S());
+    lz = vector<F>(size, F());
   }
 
   void build(vector<S>& v) {
@@ -221,7 +226,7 @@ struct LazySegTree
   void push(int k) {
     all_apply(2*k,lz[k]);
     all_apply(2*k+1,lz[k]);
-    lz[k] = F_ID;
+    lz[k] = F();
   }
 
   void update(int p, S x) {
@@ -245,8 +250,8 @@ struct LazySegTree
   // Find result for range [l,r)
   S query (int l, int r) {
     assert(0 <= l && l <= r && r <= _n);
-    if (l==r) return S_ID;
-    S ansl = S_ID, ansr = S_ID;
+    if (l==r) return S();
+    S ansl = S(), ansr = S();
     l += size;
     r += size;
 
@@ -494,10 +499,12 @@ struct LazySegTree {
 endsnippet
 
 snippet lazysegtree_alt
-// More general lazy segtree
+// Source: Me
+// Tested on: ???
+// More general segtree. Remember to set identities.
 struct LazySegTree {
   struct F { // Lazy update
-    ll inc = 0;
+    int64_t inc = 0;
     F() {} // identity
     F(int x) : inc(x) {}
     F& operator *= (const F& a) { // Compose a onto this (a is new)
@@ -506,7 +513,7 @@ struct LazySegTree {
     }
   };
   struct T { // Segtree data
-    ll sz = 1, sum = 0;
+    int64_t sz = 1, sum = 0;
     T() {} // identity
     T(int x) : sum(x) {}
     friend T operator+(const T& a, const T& b) { // Combine two data
@@ -575,10 +582,12 @@ struct LazySegTree {
 endsnippet
 
 snippet segtree_alt
-// More general segtree
+// Source: Me
+// Tested on: ???
+// More general segtree. Remember to set identities
 struct SegTree {
   struct T { // Segtree data
-    ll sz = 0, sum = 0;
+    int64_t sz = 0, sum = 0;
     T() {} // identity
     T(int x) : sum(x) {}
     friend T operator+(const T& a, const T& b) { // Combine two data
@@ -623,8 +632,9 @@ struct SegTree {
 endsnippet
 
 snippet segbeats
-const ll INF = 1e18;
+const int64_t INF = 1e18;
 struct SegTreeBeats {
+  using ll = int64_t;
   struct Beat {
     ll max, smax, max_c;
     ll min, smin, min_c;
