@@ -1,0 +1,9 @@
+# Change color options.
+set recolor-lightcolor "#1a1b26"
+set recolor-darkcolor "#a9b1d6"
+
+# Let selection go to clipboard.
+set selection-clipboard "clipboard"
+
+# Open document in fit-width mode.
+set adjust-open "width"

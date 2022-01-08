@@ -1,0 +1,33 @@
+#! /bin/sh
+sxhkd &
+
+/home/lain/.bin/start_monitor
+
+dunst --config /home/lain/.config/dunst/dunstrc &
+
+~/.fehbg &
+
+
+intern=eDP1
+extern=HDMI-1-0
+
+if xrandr | grep "$extern connected"; then
+  bspc monitor HDMI-1-0 -d I II III IV
+  bspc monitor eDP1 -d V VI VII VIII
+else
+  bspc monitor eDP1 -d I II III IV V VI VII VIII
+fi
+
+
+
+# Start polybar.
+/home/lain/.config/polybar/launch.sh
+
+bspc config border_width         2
+bspc config window_gap          12
+
+bspc config split_ratio          0.5
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true
+
+bspc rule -a Zathura state=tiled

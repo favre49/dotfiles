@@ -1,0 +1,249 @@
+;==========================================================
+;
+;
+;   ██████╗  ██████╗ ██╗  ██╗   ██╗██████╗  █████╗ ██████╗
+;   ██╔══██╗██╔═══██╗██║  ╚██╗ ██╔╝██╔══██╗██╔══██╗██╔══██╗
+;   ██████╔╝██║   ██║██║   ╚████╔╝ ██████╔╝███████║██████╔╝
+;   ██╔═══╝ ██║   ██║██║    ╚██╔╝  ██╔══██╗██╔══██║██╔══██╗
+;   ██║     ╚██████╔╝███████╗██║   ██████╔╝██║  ██║██║  ██║
+;   ╚═╝      ╚═════╝ ╚══════╝╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+;
+;
+;   To learn more about how to configure Polybar
+;   go to https://github.com/polybar/polybar
+;
+;   The README contains a lot of information
+;
+;==========================================================
+
+[colors]
+; Tokyo Night Theme
+; background = #1a1b26
+background = #24283b
+foreground = #c0caf5
+selection_background = #33467c
+selection_foreground = #c0caf5
+color0 = #15161E
+color1 = #f7768e
+color2 = #9ece6a
+color3 = #e0af68
+color4 = #7aa2f7
+color5 = #bb9af7
+color6 = #7dcfff
+color7 = #a9b1d6
+color8 = #414868
+color9 = #f7768e
+color10 = #9ece6a
+color11 = #e0af68
+color12 = #7aa2f7
+color13 = #bb9af7
+color14 = #7dcfff
+color15 = #c0caf5
+color16 = #ff9e64
+color17 = #db4b4b
+
+[bar/lainbar]
+monitor = eDP1
+width = 100%
+height = 18
+fixed-center = true
+
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+line-size = 0
+line-color = #f00
+
+border-top-size = 5
+border-bottom-size = 5
+border-top-color = ${colors.background}
+border-bottom-color = ${colors.background}
+
+padding-left = 0
+padding-right = 2
+
+module-margin-left = 1
+module-margin-right = 2
+
+font-0 = JetBrainsMono Nerd Font:style=Bold:pixelsize=9;3
+font-1 = JetBrainsMono Nerd Font:size=14;4
+font-2 = Material Design Icons:style=Regular:size=9;3
+font-3 = Noto Serif CJK JP:style=Bold:size=9;3
+
+modules-left = bspwm
+modules-center = date
+modules-right = pulseaudio wlan battery
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+
+[bar/lainbar_external]
+monitor = HDMI-1-0
+width = 100%
+height = 18
+fixed-center = true
+
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+line-size = 0
+line-color = #f00
+
+border-top-size = 5
+border-bottom-size = 5
+border-top-color = ${colors.background}
+border-bottom-color = ${colors.background}
+
+padding-left = 0
+padding-right = 2
+
+module-margin-left = 1
+module-margin-right = 2
+
+font-0 = JetBrainsMono Nerd Font:style=Bold:pixelsize=9;3
+font-1 = JetBrainsMono Nerd Font:size=14;4
+font-2 = Material Design Icons:style=Regular:size=9;3
+font-3 = Noto Serif CJK JP:style=Bold:size=9;3
+
+modules-left = bspwm
+modules-center = date
+modules-right = pulseaudio wlan battery
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+
+[module/bspwm]
+type = internal/bspwm
+
+pin-workspaces = true
+
+ws-icon-0 = I;一
+ws-icon-1 = II;二
+ws-icon-2 = III;三
+ws-icon-3 = IV;四
+ws-icon-4 = V;五
+ws-icon-5 = VI;六
+ws-icon-6 = VII;七
+ws-icon-7 = VIII;八
+
+label-focused = %icon%
+label-focused-foreground = ${colors.color9}
+label-focused-padding = 2
+
+label-occupied = %icon%
+label-occupied-padding = 2
+
+label-urgent = %icon%!
+label-urgent-background = ${colors.color9}
+label-urgent-padding = 2
+
+label-empty = %icon%
+label-empty-foreground = ${colors.foreground}
+label-empty-padding = 2
+
+[module/wlan]
+type = internal/network
+interface = wlan0
+interval = 3.0
+
+format-connected = <ramp-signal> <label-connected>
+label-connected = %essid%
+
+format-padding = 1
+
+format-disconnected =
+
+ramp-signal-0 = 󰤯
+ramp-signal-1 = 󰤟
+ramp-signal-2 = 󰤢
+ramp-signal-3 = 󰤥
+ramp-signal-4 = 󰤨
+ramp-signal-foreground = ${colors.color2}
+
+[module/date]
+type = internal/date
+interval = 5
+
+date = "%A, %d %B"
+date-alt = " %Y-%m-%d"
+
+time = "%H:%M"
+time-alt = %H:%M:%S
+
+format = <label>
+format-background = ${colors.background}
+format-foreground = ${colors.foreground}
+
+label = %date% at %time%
+label-foreground = ${colors.foreground}
+
+[module/pulseaudio]
+type = internal/pulseaudio
+
+format-volume = <label-volume> 
+label-volume = 󰎆   %percentage%%
+format-volume-foreground = ${colors.color1}
+
+[module/battery]
+type = internal/battery
+battery = BAT0
+adapter = ADP1
+full-at = 98
+
+format-charging = <animation-charging> <label-charging>
+label-charging = %percentage%%
+format-charging-foreground = ${colors.color4}
+format-charging-background = ${colors.background}
+
+format-discharging = <ramp-capacity> <label-discharging>
+label-discharging = %percentage%%
+format-discharging-foreground = ${colors.foreground}
+format-discharging-background = ${colors.background}
+
+format-full-prefix = "  "
+format-full-prefix-foreground = ${colors.color16}
+format-foreground = ${colors.color4}
+format-background = ${colors.background}
+
+label-discharging-foreground = ${colors.foreground}
+ramp-capacity-foreground =  ${colors.color16}
+label-charging-foreground = ${colors.foreground}
+
+label-padding = 1
+
+ramp-capacity-0 = "  " 
+ramp-capacity-1 = "  " 
+ramp-capacity-2 = "  " 
+ramp-capacity-3 = "  " 
+ramp-capacity-4 = "  "
+
+
+animation-charging-0 = "  " 
+animation-charging-1 = "  " 
+animation-charging-2 = "  " 
+animation-charging-3 = "  " 
+animation-charging-4 = "  "
+
+animation-charging-foreground = ${colors.color16}
+animation-charging-framerate = 750
+
+format-charging-padding = 1
+format-discharging-padding = 1
+
+[module/spotify]
+type = custom/script
+interval = 1
+format-prefix = " "
+format = <label>
+format-foreground = ${colors.base00}
+exec = python ~/.config/polybar/scripts/spotify_status.py -f '{artist}: {song}'
+
+
+[settings]
+screenchange-reload = true
+
+[global/wm]
+margin-top = 5
+margin-bottom = 5
+
+; vim:ft=dosini

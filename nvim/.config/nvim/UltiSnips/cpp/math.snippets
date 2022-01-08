@@ -1,0 +1,450 @@
+snippet nck
+vector<mod_int> fact, invfact, inv;
+
+void prepare_factorials(int N) {
+  assert(N >= 2);
+  fact.resize(N+1);
+  invfact.resize(N+1);
+  inv.resize(N+1);
+  inv[1] = invfact[1] = invfact[0] = fact[0] = fact[1] = 1;
+  for (int i = 2; i <= N; i++) {
+    fact[i] = fact[i-1]*i;
+    inv[i] = inv[MOD%i]*(MOD-MOD/i);
+    invfact[i] = invfact[i-1]*inv[i];
+  }
+}
+
+mod_int choose(int n, int k) {
+  if (n < k) return 0;
+  if (n < 0 || k < 0) return 0;
+  return fact[n]*(invfact[k]*invfact[n-k]);
+}
+endsnippet
+
+snippet sieve
+// Source: bqi343+Me
+// Tested On:
+// Fast prime sieve in O(NloglogN)
+// Also finds the number of primes <= x
+template <int N = 100007>
+struct Sieve {
+  bitset<N> isPrime;
+  vector<int> primes, cum;
+  Sieve() {
+    isPrime.set();
+    isPrime[0] = isPrime[1] = 0;
+    for (int i = 4; i < N; i+=2) isPrime[i] = 0;
+    for (int i = 3; i*i < N; i+=2)
+      if (isPrime[i])
+        for (int j = i*i; j < N; j += 2*i)
+          isPrime[j] = 0;
+    for (int i = 0; i < N; i++) {
+      if (isPrime[i])
+        primes.push_back(i);
+      cum.push_back(primes.size());
+    }
+  }
+};
+endsnippet
+
+snippet floorsum
+// Source: ACL
+// Tested on: ARC111 E
+// Find sum of floor((ai+b)/m), 0 <= i <= n-1
+// O(log(n+m+a+b))
+int64_t floor_sum(int64_t n, int64_t m, int64_t a, int64_t b) {
+  using ll = int64_t;
+  ll ans = 0;
+  if (a >= m) {
+    ans += (n - 1) * n * (a / m) / 2;
+    a %= m;
+  }
+  if (b >= m) {
+    ans += n * (b / m);
+    b %= m;
+  }
+
+  ll y_max = (a * n + b) / m, x_max = (y_max * m - b);
+  if (y_max == 0) return ans;
+  ans += (n - (x_max + a - 1) / a) * y_max;
+  ans += floor_sum(y_max, a, m, (a - x_max % a) % a);
+  return ans;
+}
+endsnippet
+
+snippet invgcd
+// Source: ACL
+// returns a pair (g,x) such that:
+// g = gcd(a,b)
+// xa = g mod b
+// 0 <= x < b/g;
+pair<int64_t,int64_t> inv_gcd(int64_t a, int64_t b) {
+  using ll = int64_t;
+  a = a%b;
+  if (a < 0) a += b;
+  if (a==0) return {b,0};
+  ll s = b, t = a;
+  ll m0 = 0, m1 = 1;
+  while(t) {
+    ll u = s/t;
+    s -= t*u;
+    m0 -= m1*u;
+    auto tmp = s;
+    s = t;
+    t = tmp;
+    tmp = m0;
+    m0 = m1;
+    m1 = tmp;
+  }
+  if (m0 < 0) m0 += b/s;
+  return {s,m0};
+}
+endsnippet
+
+snippet crt
+// Source: ACL
+// Takes as input list of residues and mods
+// If there is no solution, returns {0,0}
+// Otherwise, returns (y,z) such that all solutions are x = y mod z
+// Complexity : O(n log(lcm))
+pair<int64_t,int64_t> crt(const vector<int64_t>& r, vector<int64_t>& m) {
+  using ll = int64_t;
+  assert(r.size() == m.size());
+  int n = (int)r.size();
+  ll r0 = 0, m0 = 1;
+  for (int i = 0; i < n; i++) {
+    assert(1 <= m[i]);
+    ll r1 = r[i]%m[i], m1 = m[i];
+    if (r1 < 0) r1 += m[i];
+    if (m0 < m1) {
+      swap(r0,r1);
+      swap(m0,m1);
+    }
+    if (m0 % m1 == 0) {
+      if (r0 %m1 != r1) return {0,0};
+      continue;
+    }
+    ll g, im;
+    tie(g,im) = inv_gcd(m0,m1);
+    ll u1 = m1/g;
+    if ((r1-r0)%g) return {0,0};
+    ll x = (r1-r0)/g%u1 * im%u1;
+    r0 += x*m0;
+    m0 *= u1;
+    if (r0 < 0) r0 += m0;
+  }
+  return {r0,m0};
+}
+endsnippet
+
+snippet linsieve
+// Source: Nisiyama_Suzune
+// Calculate f(x) for [1,N] where f is a multiplicative function
+// Calculates f(p^k) = k
+vector<int> linear_sieve(int N) {
+  vector<int> f(N+1), cnt(N+1), prime;
+  vector<bool> is_composite(N+1);
+  f[1] = 1;
+  for (int i = 2; i <= N; i++) {
+    if (!is_composite[i]) { // Prime number, seed f(p)
+      prime.push_back(i);
+      f[i] = 1; // TODO: seed f(p)
+      cnt[i] = 1;
+    }
+    for (int j = 0; j < prime.size() && i*prime[j] <= N; j++) {
+      is_composite[i*prime[j]] = true;
+      if (i%prime[j] == 0) { // p and i are not coprime
+        // f(ip) = f(i/p^cnt[i]) * f(p^(cnt[i]+1))
+        // f(ip) = f(i)/f(p^cnt[i]) * f(p^(cnt[i]+1)) [Denom shouldn't be 0]
+        f[i*prime[j]] = f[i]/cnt[i] * (cnt[i]+1);
+        break;
+      }
+      else { // p and i are coprime, f[ip] = f[i]*f[p]
+        f[i*prime[j]] = f[i]*f[prime[j]];
+        cnt[i*prime[j]] = 1;
+      }
+    }
+  }
+  return f;
+}
+endsnippet
+
+snippet elemmath
+// Source: Me
+// Elementary number theory functions, like:
+// 1. Prime factorization
+// 2. Euler's totient function
+// 3. Mobius function
+// 4. Binary exponentiation 
+// 5. Primitive roots
+vector<pair<int64_t,int>> factorize(int64_t x) {
+  vector<pair<int64_t,int>> res;
+  for (int64_t i = 2; i*i <= x; i++) {
+    if (x%i==0) {
+      int c = 0;
+      while(x%i==0) {
+        x /= i;
+        c++;
+      }
+      res.push_back({i,c});
+    }
+  }
+  if (x != 1) res.push_back({x,1});
+  return res;
+}
+
+// Mobius function for [1,N]
+vector<int> MobiusFunction(int N) {
+  vector<int> mu(N+1), lpf(N+1);
+  mu[1] = 1;
+  for (int i = 2; i <= N; i++) {
+    if (!lpf[i]) {
+      for (int j = i; j <= N; j += i)
+        lpf[j] = i;
+    }
+    if (lpf[i/lpf[i]] == lpf[i])
+      mu[i] = 0;
+    else
+      mu[i] = -mu[i/lpf[i]];
+  }
+  return mu;
+}
+
+// Evaluate mobius function
+int mu(int64_t x) {
+  if (x==1) return 1;
+  auto pf = factorize(x);
+  for (auto [p,c] : pf)
+    if (c >= 2) return 0;
+  return pf.size()%2?-1:1;
+}
+
+// Totient function for [1,N]
+vector<int> TotientFunction(int N) {
+  vector<int> phi(N+1);
+  for (int i = 0; i <= N; i++) phi[i] = i;
+  for (int i = 2; i <= N; i++) {
+    if (phi[i] == i) {
+      for (int j = i; j <= N; j += i)
+        phi[j] = phi[j]/i*(i-1);
+    }
+  }
+  return phi;
+}
+
+// Evaluate totient function for given x
+int64_t phi(int64_t x) {
+  auto pf = factorize(x);
+  int64_t ans = x;
+  for (auto [p,_] : pf)
+    ans = ans/p*(p-1);
+  return ans;
+}
+
+int64_t modpow(int64_t a, int64_t n, int64_t mod) {
+  a %= mod;
+  long long ret = 1;
+  while (n > 0) {
+    if (n & 1) ret = ret * a % mod;
+    a = a * a % mod;
+    n >>= 1;
+  }
+  return ret % mod;
+};
+
+// Check if r is a primitive root
+bool isPrimitiveRoot(int64_t r, int64_t mod) {
+  r %= mod;
+  if (r==0) return false;
+  auto pf = factorize(mod-1);
+  for (auto [p,c] : pf) 
+    if (modpow(r,(mod-1)/p, mod) == 1)
+      return false;
+  return true;
+}
+
+// Get the primitive root for given mod
+int64_t getPrimitiveRoot(int64_t mod) {
+  if (mod == 2) return 1;
+  int64_t ret = 1;
+  while(!isPrimitiveRoot(ret,mod)) ret++;
+  return ret;
+}
+endsnippet
+
+snippet fastfac
+using ll = int64_t;
+using ull = uint64_t;
+
+// Source: KACTL + ???
+// Tested on: 1027G
+// Primality and factorization for 64 bit integers, using Pollard Rho and
+// Miller Rabin
+// KACTL modmul has been switched with my own modmul (Testing)
+
+ull modmul(ull a, ull b, ull m) {
+  long double x; ull c; ll r;
+  if (a >= m) a %= m;
+  if (b >= m) b %= m;
+  x = a; c = x * b / m; r = (ll)(a * b - c * m) % (ll)m;
+  return r < 0 ? r + m : r;
+}
+
+ull modpow(ull b, ull e, ull mod) {
+  ull ans = 1;
+  for (; e; b = modmul(b, b, mod), e /= 2)
+    if (e & 1) ans = modmul(ans, b, mod);
+  return ans;
+}
+
+// Miller-Rabin prime check
+bool isPrime(ull n) {
+  if (n < 2 || n % 6 % 4 != 1) return (n | 1) == 3;
+  ull A[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
+      s = __builtin_ctzll(n-1), d = n >> s;
+  for (ull a : A) {   // ^ count trailing zeroes
+    ull p = modpow(a%n, d, n), i = s;
+    while (p != 1 && p != n - 1 && a % n && i--)
+      p = modmul(p, p, n);
+    if (p != n-1 && i != s) return 0;
+  }
+  return 1;
+}
+
+ull pollard(ull n) {
+  auto f = [n](ull x) { return modmul(x, x, n) + 1; };
+  ull x = 0, y = 0, t = 30, prd = 2, i = 1, q;
+  while (t++ % 40 || __gcd(prd, n) == 1) {
+    if (x == y) x = ++i, y = f(x);
+    if ((q = modmul(prd, max(x,y) - min(x,y), n))) prd = q;
+    x = f(x), y = f(f(y));
+  }
+  return __gcd(prd, n);
+}
+
+// Returns an uncompressed vector of all prime factors using Pollard-Rho
+vector<ull> uncompressed_factor(ull n) {
+  if (n == 1) return {};
+  if (isPrime(n)) return {n};
+  ull x = pollard(n);
+  auto l = uncompressed_factor(x), r = uncompressed_factor(n / x);
+  l.insert(l.end(), r.begin(),r.end());
+  return l;
+}
+
+// O(n^{1/4}) factorization using Pollard-Rho
+// Returns a vector of all prime factors.
+vector<pair<ull,int>> factorize(ull n) {
+  auto fac = uncompressed_factor(n);
+  sort(fac.begin(),fac.end());
+  vector<pair<ull,int>> ret;
+  for (auto x : fac) {
+    if (ret.empty() || ret.back().first != x)
+      ret.push_back({x,1});
+    else 
+      ret.back().second++;
+  }
+  return ret;
+}
+endsnippet
+
+snippet isqrt
+ll isqrt(ll x) {
+  ll sq = sqrtl(x+0.5);
+  while(sq*sq < x)
+    sq++;
+  while(sq*sq > x)
+    sq--;
+  return sq;
+}
+endsnippet
+
+snippet primecnt
+// Source: misterkeemu
+// Tested on: Yosupo Counting Primes
+// Complexity: ???
+// Returns number of primes <= N
+// Works with some black magic, probably optimized Meissel-Lehmer. Must check.
+// About 10x faster than any other Meissel-Lehmer implementation.
+int64_t pi(const int64_t N) {
+  if(N <= 1) return 0;
+  if(N == 2) return 1;
+  const int v = sqrtl(N);
+  int s = (v + 1) / 2;
+  vector<int> smalls(s);
+  vector<int> roughs(s);
+  vector<long long> larges(s);
+  for(int i = 1; i < s; ++i) smalls[i] = i;
+  for(int i = 0; i < s; ++i) roughs[i] = 2 * i + 1;
+  for(int i = 0; i < s; ++i) larges[i] = (N / (2 * i + 1) - 1) / 2;
+  vector<bool> skip(v+1);
+  const auto divide = [] (int64_t n, int64_t d) -> int{ return double(n) / d; };
+  const auto half = [] (int n) -> int{ return (n - 1) >> 1; };
+  int pc = 0;
+  for(int p = 3; p <= v; p += 2) if(!skip[p]){
+    int q = p * p;
+    if((int64_t)(q) * q > N) break;
+    skip[p] = true;
+    for(int i = q; i <= v; i += 2 * p) skip[i] = true;
+    int ns = 0;
+    for(int k = 0; k < s; ++k){
+      int i = roughs[k];
+      if(skip[i]) continue;
+      int64_t d = (int64_t)(i) * p;
+      larges[ns] = larges[k] - (d <= v ? larges[smalls[d >> 1] - pc] : smalls[half(divide(N, d))]) + pc;
+      roughs[ns++] = i;
+    }
+    s = ns;
+    for(int i = half(v), j = ((v / p) - 1) | 1; j >= p; j -= 2){
+      int c = smalls[j >> 1] - pc;
+      for(int e = (j * p) >> 1; i >= e; --i) smalls[i] -= c;
+    }
+    ++pc;
+  }
+  larges[0] += (int64_t)(s + 2 * (pc - 1)) * (s - 1) / 2;
+  for(int k = 1; k < s; ++k) larges[0] -= larges[k];
+  for(int l = 1; l < s; ++l){
+    int q = roughs[l];
+    int64_t M = N / q;
+    int e = smalls[half(M / q)] - pc;
+    if(e < l + 1) break;
+    int64_t t = 0;
+    for(int k = l + 1; k <= e; ++k) t += smalls[half(divide(M, roughs[k]))];
+    larges[0] += t - (int64_t)(e - l) * (pc + l - 1);
+  }
+  return larges[0] + 1;
+}
+endsnippet
+
+snippet modlog
+// Source: cp-algorithms
+// Tested on: CF 1106 F
+// Complexity: O(sqrt(m))
+// Solves for x in:
+// a^x \equiv b \mod m
+int mod_log(int a, int b, int m) {
+  a %= m, b %= m;
+  int k = 1, add = 0, g;
+  while((g = __gcd(a,m)) > 1) {
+    if (b==k) return add;
+    if (b%g) return -1;
+    b /= g, m /= g, ++add;
+    k = (k*1LL*a/g)%m;
+  }
+  int n = sqrt(m)+1, an = 1;
+  for (int i = 0; i < n; i++) an = (1LL*an*a)%m;
+  unordered_map<int,int> vals;
+  for (int q = 0, cur = b; q <= n; q++) {
+    vals[cur] = q;
+    cur = (cur*1LL*a)%m;
+  }
+  for (int p = 1, cur = k; p <= n; p++) {
+    cur = (cur*1LL*an)%m;
+    if (vals.count(cur)) {
+      int ans = n*p - vals[cur] + add;
+      return ans;
+    }
+  }
+  return -1;
+}
+endsnippet

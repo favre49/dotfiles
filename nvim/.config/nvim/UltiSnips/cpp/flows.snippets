@@ -1,0 +1,328 @@
+snippet dinic
+
+// Source: me
+// Tested On: Yosupo Matching on Bipartite Graph
+// Find the max flow through a directed graph
+// works in O(V^2E)
+// Run flow algorithm with the flow() function
+template<typename T = int>
+struct Dinic {
+  // Edge u->v with capacity cap
+  struct FlowEdge {
+    int u,v;
+    T cap, flow = 0;
+    FlowEdge(int u, int v, T cap) : u(u),v(v),cap(cap) {}
+  };
+
+  const T INF = numeric_limits<T>::max();
+  vector<FlowEdge> edges;
+  vector<vector<int>> adj;
+  int n,m = 0;
+  int s,t;
+  vector<int> level, ptr;
+  queue<int> q;
+
+  // Graph with n vertices, source vertex s and sink vertex t
+  Dinic(int n, int s, int t) : n(n), s(s), t(t) {
+    adj.resize(n); level.resize(n); ptr.resize(n);
+  }
+  void add_edge(int u,int v, T cap) {
+    edges.push_back({u,v,cap});
+    edges.push_back({v,u,0});
+    adj[u].push_back(m);
+    adj[v].push_back(m+1);
+    m += 2;
+  }
+  bool bfs() {
+    while(!q.empty()) {
+      int u = q.front();
+      q.pop();
+      for (int e : adj[u]) {
+        if (edges[e].cap - edges[e].flow < 1) continue;
+        if (level[edges[e].v] != -1) continue;
+        level[edges[e].v] = level[u]+1;
+        q.push(edges[e].v);
+      }
+    }
+    return level[t] != -1;
+  }
+  T dfs(int u, T pushed) {
+    if (pushed == 0) return 0;
+    if (u==t) return pushed;
+    for (int& cid = ptr[u]; cid < (int) adj[u].size(); cid++) {
+      int id = adj[u][cid];
+      int v = edges[id].v;
+      if (level[u]+1!=level[v]||edges[id].cap -edges[id].flow<1) continue;
+      T tr = dfs(v,min(pushed,edges[id].cap-edges[id].flow));
+      if (tr==0) continue;
+      edges[id].flow += tr;
+      edges[id^1].flow -= tr;
+      return tr;
+    }
+    return 0;
+  }
+  T flow() {
+    T f = 0;
+    while(1) {
+      fill(level.begin(),level.end(),-1);
+      level[s] = 0;
+      q.push(s);
+      if (!bfs()) break;
+      fill(ptr.begin(),ptr.end(),0);
+      while(T pushed = dfs(s,INF))
+        f += pushed;
+    }
+    return f;
+  }
+  vector<bool> min_cut() {
+    vector<bool> res(n);
+    for (int i = 0; i < n; i++)
+      res[i] = (level[i] != -1);
+    return res;
+  }
+};
+endsnippet
+
+snippet pushrelabel
+template <class F> struct PushRelabel {
+  struct Edge { int to, rev; F flow; };
+  const F INF = numeric_limits<F>::max();
+  int n, s, t, highest, work;
+  vector<vector<Edge>> adj;
+  vector<vector<int>> lst, gap;
+  vector<int> height, cnt;
+  vector<F> excess;
+
+  PushRelabel(int n_) {
+    n = n_;
+    adj.clear(); adj.resize(2 * n);
+    lst.clear(); lst.resize(2 * n);
+    gap.clear(); gap.resize(2 * n);
+    height.assign(2 * n, 0);
+    cnt.assign(2 * n, 0);
+    excess.assign(2 * n, 0);
+    work = highest = 0;
+  }
+  void add_edge(int u, int v, F cap) {
+    assert(cap >= 0);
+    Edge a{v,(int)adj[v].size(),cap};
+    Edge b{u,(int)adj[u].size(),0};
+    adj[u].push_back(a);
+    adj[v].push_back(b);
+  }
+  void update_height(int v, int nh) {
+    work++;
+    if (height[v] != n) cnt[height[v]]--;
+    height[v] = nh;
+    if (nh == n) return;
+    cnt[nh]++;
+    highest = nh;
+    gap[nh].push_back(v);
+    if (excess[v] > 0) lst[nh].push_back(v);
+  }
+  void global_relabel() {
+    work = 0;
+    for (int i = 0; i < n; i++)
+      height[i] = n, cnt[i] = 0;
+    for (int i = 0; i < highest; i++)
+      lst[i].clear(), gap[i].clear();
+    height[t] = 0;
+    queue<int> q({t});
+    while (!q.empty()) {
+      int v = q.front();
+      q.pop();
+      for (auto& e : adj[v])
+        if (height[e.to] == n && adj[e.to][e.rev].flow > 0)
+          q.push(e.to), update_height(e.to, height[v] + 1);
+      highest = height[v];
+    }
+  }
+  void push(int v, Edge& e) {
+    if (excess[e.to] == 0)
+      lst[height[e.to]].push_back(e.to);
+    F df = std::min(excess[v], e.flow);
+    e.flow -= df, adj[e.to][e.rev].flow += df;
+    excess[v] -= df, excess[e.to] += df;
+  }
+  void discharge(int v) {
+    int nh = n;
+    for (auto& e : adj[v])
+      if (e.flow > 0)
+        if (height[v] == height[e.to] + 1) {
+          push(v, e);
+          if (excess[v] <= 0) return;
+        } else {
+          nh = std::min(nh, height[e.to] + 1);
+        }
+    if (cnt[height[v]] > 1)
+      update_height(v, nh);
+    else {
+      for (int i = height[v]; i <= highest; i++) {
+        for (auto& j : gap[i])
+          update_height(j, n);
+        gap[i].clear();
+      }
+    }
+  }
+  F max_flow(int s_, int t_) {
+    s = s_, t = t_;
+    if (s == t)
+      return -1;
+    for (int i = 0; i < n; i++)
+      excess[i] = 0;
+    excess[s] = INF, excess[t] = -INF;
+    global_relabel();
+    for (auto& e : adj[s])
+      push(s, e);
+    for (; highest >= 0; highest--)
+      while (!lst[highest].empty()) {
+        int v = lst[highest].back();
+        lst[highest].pop_back();
+        discharge(v);
+        if (work > 4 * n)
+          global_relabel();
+      }
+    return excess[t] + INF; //???
+  }
+};
+endsnippet
+
+snippet mcmf
+template <typename flow_t = int, typename cost_t = long long>
+struct MCMF {
+	int N;
+	vector<vector<int>> adj;
+	struct edge_t {
+		int dest;
+		flow_t cap;
+		cost_t cost;
+	};
+	vector<edge_t> edges;
+
+	vector<char> seen;
+	vector<cost_t> pi;
+	vector<int> prv;
+
+	explicit MCMF(int N_) : N(N_), adj(N), pi(N, 0), prv(N) {}
+
+	void addEdge(int from, int to, flow_t cap, cost_t cost) {
+		assert(cap >= 0);
+		assert(cost >= 0);
+		int e = int(edges.size());
+		edges.emplace_back(edge_t{to, cap, cost});
+		edges.emplace_back(edge_t{from, 0, -cost});
+		adj[from].push_back(e);
+		adj[to].push_back(e+1);
+	}
+
+	const cost_t INF_COST = std::numeric_limits<cost_t>::max() / 4;
+	const flow_t INF_FLOW = std::numeric_limits<flow_t>::max() / 4;
+	vector<cost_t> dist;
+	__gnu_pbds::priority_queue<std::pair<cost_t, int>> q;
+	vector<typename decltype(q)::point_iterator> its;
+	void path(int s) {
+		dist.assign(N, INF_COST);
+		dist[s] = 0;
+
+		its.assign(N, q.end());
+		its[s] = q.push({0, s});
+
+		while (!q.empty()) {
+			int i = q.top().second; q.pop();
+			cost_t d = dist[i];
+			for (int e : adj[i]) {
+				if (edges[e].cap) {
+					int j = edges[e].dest;
+					cost_t nd = d + edges[e].cost;
+					if (nd < dist[j]) {
+						dist[j] = nd;
+						prv[j] = e;
+						if (its[j] == q.end()) {
+							its[j] = q.push({-(dist[j] - pi[j]), j});
+						} else {
+							q.modify(its[j], {-(dist[j] - pi[j]), j});
+						}
+					}
+				}
+			}
+		}
+		swap(pi, dist);
+	}
+
+	pair<flow_t, cost_t> maxflow(int s, int t) {
+		assert(s != t);
+		flow_t totFlow = 0; cost_t totCost = 0;
+		while (path(s), pi[t] < INF_COST) {
+			flow_t curFlow = std::numeric_limits<flow_t>::max();
+			for (int cur = t; cur != s; ) {
+				int e = prv[cur];
+				int nxt = edges[e^1].dest;
+				curFlow = std::min(curFlow, edges[e].cap);
+				cur = nxt;
+			}
+			totFlow += curFlow;
+			totCost += pi[t] * curFlow;
+			for (int cur = t; cur != s; ) {
+				int e = prv[cur];
+				int nxt = edges[e^1].dest;
+				edges[e].cap -= curFlow;
+				edges[e^1].cap += curFlow;
+				cur = nxt;
+			}
+		}
+		return {totFlow, totCost};
+	}
+};
+endsnippet
+
+snippet hungarian
+// Source: KACTL
+// Tested on: Hackerrank Inter-Hall Courier Service
+// Given a weighted bipartite graph, finds minimum weight matching.
+// Takes cost[n][m], where cost[i][j] = cost for L[i] to be matched with R[j]
+// returns {min cost, match} such that L[i] is matched with R[match[i]]
+// Negate costs for max cost.
+// Complexity is O(N^2M)
+template<typename T>
+pair<T,vector<int>> hungarian(const vector<vector<T>>& c) {
+  if (c.empty()) return {0,{}};
+  int n = c.size()+1, m = c[0].size()+1;
+  vector<T> u(n), v(m);
+  vector<int> p(m), ans(n-1);
+  for (int i = 1; i < n; i++) {
+    p[0] = i;
+    int j0 = 0; // Dummy worker 0
+    vector<T> dist(m,numeric_limits<T>::max());
+    vector<int> pre(m,-1);
+    vector<bool> done(m+1);
+    do { // dijkstra
+      done[j0] = 1;
+      int i0 = p[j0], j1;
+      T delta = numeric_limits<T>::max();
+      for (int j = 1; j < m; j++) {
+        if (!done[j]) {
+          auto curr = c[i0-1][j-1] - u[i0] - v[j];
+          if (curr < dist[j]) dist[j] = curr, pre[j] = j0;
+          if (dist[j] < delta) delta = dist[j], j1 = j;
+        }
+      }
+      for (int j = 0; j < m; j++) {
+        if (done[j])
+          u[p[j]] += delta, v[j] -= delta;
+        else
+          dist[j] -= delta;
+      }
+      j0 = j1;
+    } while(p[j0]);
+    while(j0) { // update alternating path
+      int j1 = pre[j0];
+      p[j0] = p[j1], j0 = j1;
+    }
+  }
+  for (int j= 1; j < m; j++) {
+    if (p[j])
+      ans[p[j]-1] = j-1;
+  }
+  return {-v[0],ans}; // min cost
+}
+endsnippet
