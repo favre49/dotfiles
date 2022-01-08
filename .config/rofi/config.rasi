@@ -1,9 +1,0 @@
-configuration {
-	modi: "drun";
-	width: 50;
-	lines: 15;
-	columns: 1;
-	font: "mono 12";
-	matching: "fuzzy";
-	theme: "dracula";    
-}
