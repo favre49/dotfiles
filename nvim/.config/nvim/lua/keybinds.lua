@@ -20,7 +20,7 @@ map('n', 'sv',':vsplit<cr><C-w>w', default_opts)
 map('n', 'sh','<C-w>h', default_opts)
 map('n', 'sj','<C-w>j', default_opts)
 map('n', 'sk','<C-w>k', default_opts)
-map('n', 'sl','<C-w>k', default_opts)
+map('n', 'sl','<C-w>l', default_opts)
 
 -- Better tabbing
 map('n', '<Tab>', ':tabnext<cr>', default_opts)
