@@ -11,8 +11,8 @@ map('n', '<leader>W', [[:%s/\s\+$//<cr>:let@/=''<cr>]], default_opts)
 map('n', '/', '/\\v', { noremap = true })
 
 -- Nvim-Tree keybinds
-map('n', 'gT', ':NvimTreeToggle<cr>', default_opts)
-map('n', 'gt', ':NvimTreeFocus<cr>', default_opts)
+map('n', '<leader>T', ':NvimTreeToggle<cr>', default_opts)
+map('n', '<leader>t', ':NvimTreeFocus<cr>', default_opts)
 
 -- Better splits
 map('n', 'ss',':split<cr><C-w>w', default_opts)

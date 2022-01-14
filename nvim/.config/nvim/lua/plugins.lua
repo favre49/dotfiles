@@ -57,7 +57,7 @@ return require('packer').startup(function()
     config = function() require 'nvim-autopairs'.setup {} end
   }
 
-  -- UltiSnips
+  -- -- UltiSnips
   use 'SirVer/ultisnips'
 
   -- LaTeX Plugins
