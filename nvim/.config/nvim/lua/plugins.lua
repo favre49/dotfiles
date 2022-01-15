@@ -73,4 +73,7 @@ return require('packer').startup(function()
       'junegunn/fzf'
     }
   }
+
+  -- Git integration
+  use 'tpope/vim-fugitive'
 end) 
