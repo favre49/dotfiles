@@ -46,6 +46,13 @@ g.vimtex_quickfix_open_on_warning = 0
 g.Tex_BibtexFlavor = 'biber'
 vim.api.nvim_command('autocmd Filetype latex,tex :setlocal spell')
 
+-- Map :W to :w, while still allowing :Windows from fzf.vim
+-- https://github.com/junegunn/fzf.vim/issues/1084
+vim.api.nvim_command('command! -nargs=* W w')
+
+-- Spell correction for Markdown files
+vim.api.nvim_command('autocmd Filetype markdown :setlocal spell')
+
 -- Color scheme
 opt.termguicolors = true
 g.tokyonight_style = "night"
