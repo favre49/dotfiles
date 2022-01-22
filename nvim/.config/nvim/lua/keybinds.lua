@@ -26,6 +26,11 @@ map('n', 'sl','<C-w>l', default_opts)
 map('n', '<Tab>', ':tabnext<cr>', default_opts)
 map('n', '<S-Tab>', ':tabprev<cr>', default_opts)
 
+-- Unmap help and Ex mode
+map('n','Q','<Nop>', default_opts)
+map('n','<F1>','<Nop>', default_opts)
+map('i','<F1>','<Nop>', default_opts)
+
 -- Competitive related mappings
 pwd = vim.loop.cwd()
 compete_dir = vim.env.COMPETE
