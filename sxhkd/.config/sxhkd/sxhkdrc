@@ -4,12 +4,15 @@
 
 # Terminal Emulator
 super + Return
-	kitty
+	      kitty
 
 # Firefox
 super + f
         firefox
 
+# nnn
+super + e
+        kitty -e nnn  
 
 #
 # Utilities
