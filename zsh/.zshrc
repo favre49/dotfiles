@@ -24,6 +24,9 @@ export PAGER='less -Ri'
 # Export directory for competitive programming
 export COMPETE='/home/lain/compete'
 
+# Export default command for FZF
+export FZF_DEFAULT_COMMAND="find . -type f"
+
 # Set up rbenv
 eval "$(rbenv init -)"
 

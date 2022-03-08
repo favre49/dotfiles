@@ -1,4 +1,5 @@
 snippet lca
+
 // Source: Me
 // Tested On: Yosupo Lowest Common Ancestor
 // Assumes Connected Tree
@@ -36,7 +37,7 @@ struct LCA {
     vector<int> euler_depths;
     for (int v : euler)
       euler_depths.push_back(depth[v]);
-    rmq.build(euler_depths);
+    rmq = RMQ<int>(euler_depths);
   }
 
   // Find the lca of u and v
@@ -44,7 +45,7 @@ struct LCA {
     u = first_occ[u];
     v = first_occ[v];
     if (u > v) swap(u,v);
-    return euler[rmq.query_index(u,v+1)];
+    return euler[rmq.query_index(u,v)];
   }
   // Is u an ancestor of v?
   bool is_ancestor(int u, int v) {

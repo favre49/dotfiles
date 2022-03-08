@@ -2,7 +2,7 @@ snippet fenwick
 // Source: Lain
 // Tested on: https://judge.yosupo.jp/problem/point_add_range_sum
 //
-// Implementation of a Fenwick Tree. `find_last_prefix` can be used to make
+// Implementation of a Fenwick Tree.  can be used to make
 // a order-statistics tree.
 template <typename T>
 struct Fenwick {
@@ -35,7 +35,7 @@ struct Fenwick {
       return (l == 0)?query(r):query(r) - query(l-1);
     }
 
-    // Returns the largest p in [0,tn] such that query(p) <= sum
+    // Returns the smallest p in [0,tn] such that query(p) > sum
     int find_last_prefix(T sum) {
       if (sum < 0) return -1;
       int prefix = 0;
