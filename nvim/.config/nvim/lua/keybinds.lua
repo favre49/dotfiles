@@ -11,8 +11,16 @@ map('n', '<leader>W', [[:%s/\s\+$//<cr>:let@/=''<cr>]], default_opts)
 map('n', '/', '/\\v', { noremap = true })
 
 -- Nvim-Tree keybinds
-map('n', '<leader>T', ':NvimTreeToggle<cr>', default_opts)
-map('n', '<leader>t', ':NvimTreeFocus<cr>', default_opts)
+function NvimTreeVinegarToggle()
+  local view = require 'nvim-tree.view'
+  if view.is_visible() then
+    view.close()
+  else
+    require 'nvim-tree'.open_replacing_current_buffer()
+  end
+end
+
+map('n', '<leader>t', ':lua NvimTreeVinegarToggle()<cr>', default_opts)
 
 -- Better splits
 map('n', 'ss',':split<cr><C-w>w', default_opts)
