@@ -1,0 +1,71 @@
+snippet bigstack
+// #include <sys/resource.h>
+const rlim_t kStackSize = 512L * 1024L * 1024L;   // min stack size = 64 Mb
+  struct rlimit rl;
+  int result;
+
+  result = getrlimit(RLIMIT_STACK, &rl);
+  if (result == 0)
+  {
+    if (rl.rlim_cur < kStackSize)
+    {
+      rl.rlim_cur = kStackSize;
+      result = setrlimit(RLIMIT_STACK, &rl);
+      if (result != 0)
+        fprintf(stderr, "setrlimit returned result = %d\n", result);
+    }
+  }
+endsnippet
+
+snippet prioque
+template<class T, class Compare = less<>>
+using maxheap = priority_queue<T,vector<T>,Compare>;
+
+template<class T, class Compare = greater<>>
+using minheap = priority_queue<T,vector<T>,Compare>;
+endsnippet
+
+snippet exper
+// Fast exponentiation with lookup table (in testing)
+// id is identity, base is A, sqrtbits is 16 if exponent can only go up to 2^32, order
+// is the multiplicative order
+template <typename T>
+struct Exper {
+  vector<T> pre1, pre2;
+  int sqrtbits;
+  T base;
+  ll order;
+
+  Exper(T id, T base, int sqrtbits, ll order = 0) : base(base),sqrtbits(sqrtbits),order(order) {
+    T cur = id;
+    for (int i = 0; i < (1<<sqrtbits); i++) {
+      pre1.push_back(cur);
+      cur = cur*base;
+    }
+    T largestep = cur;
+    cur = id;
+    for (int i = 0; i < (1<<sqrtbits); i++) {
+      pre2.push_back(cur);
+      cur = cur*largestep;
+    }
+  }
+
+  T get(ll n) {
+    if (order)
+      n = n%order;
+    int low = n&((1<<sqrtbits) - 1);
+    int high = n>>sqrtbits;
+    return pre1[low]*pre2[high];
+  }
+};
+endsnippet
+
+snippet fastpragma
+#pragma GCC optimize("Ofast")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
+#pragma GCC optimize("unroll-loops")
+endsnippet
+
+snippet randgen
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+endsnippet
