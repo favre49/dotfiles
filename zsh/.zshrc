@@ -13,7 +13,8 @@ autoload -U promptinit; promptinit
 prompt pure
 
 # Preferred programs
-export EDITOR='nvim'
+export VISUAL='nvim'
+export EDITOR="$VISUAL"
 export READER='zathura'
 
 # Required exports for NNN previews to work
