@@ -53,6 +53,12 @@ vim.api.nvim_command('command! -nargs=* W w')
 -- Spell correction for Markdown files
 vim.api.nvim_command('autocmd Filetype markdown :setlocal spell')
 
+-- Don't let :Rg match the filename
+vim.api.nvim_command("command! -bang -nargs=* Rg" ..
+  [[ call fzf#vim#grep("rg --column --line-number --no-heading --color=always ]] ..
+  [[--smart-case ".shellescape(<q-args>), 1, fzf#vim#with_preview({'options': ]] ..
+  [['--delimiter : --nth 4..'}), <bang>0)]])
+
 -- Color scheme
 opt.termguicolors = true
 g.tokyonight_style = "night"

@@ -74,6 +74,13 @@ return require('packer').startup(function()
     }
   }
 
+  -- Close buffers
+  use 'rbgrouleff/bclose.vim'
+
   -- Git integration
   use 'tpope/vim-fugitive'
+
+  if packer_bootstrap then
+    require('packer').sync()
+  end
 end) 

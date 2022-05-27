@@ -42,7 +42,7 @@ map('i','<F1>','<Nop>', default_opts)
 -- Competitive related mappings
 pwd = vim.loop.cwd()
 compete_dir = vim.env.COMPETE
-if string.match(pwd,compete_dir) then
+if (compete_dir ~= nil and string.match(pwd,compete_dir)) then
   local map = vim.api.nvim_set_keymap
   map('n', '<leader>m', ':!make problem_name=%< <CR>', { noremap = true})
   map('n', '<leader>d', ':!make run problem_name=%< <CR>', { noremap = true })
