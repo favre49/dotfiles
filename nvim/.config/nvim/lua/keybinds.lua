@@ -34,10 +34,12 @@ map('n', 'sl','<C-w>l', default_opts)
 map('n', '<Tab>', ':tabnext<cr>', default_opts)
 map('n', '<S-Tab>', ':tabprev<cr>', default_opts)
 
--- Unmap help and Ex mode
+-- Unmap help, Ex mode and process suspension
 map('n','Q','<Nop>', default_opts)
+map('n','<C-z>','<Nop>', default_opts)
 map('n','<F1>','<Nop>', default_opts)
 map('i','<F1>','<Nop>', default_opts)
+
 
 -- Competitive related mappings
 pwd = vim.loop.cwd()
