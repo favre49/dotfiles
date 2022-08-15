@@ -18,6 +18,8 @@ cmp.setup({
     -- Accept currently selected item. If none selected, `select` first item.
     -- Set `select` to `false` to only confirm explicitly selected items.
     ['<C-s>'] = cmp.mapping.confirm({ select = true }),
+    ['<C-n>'] = cmp.mapping(cmp.mapping.select_next_item(), {'i','c'}),
+    ['<C-p>'] = cmp.mapping(cmp.mapping.select_prev_item(), {'i','c'}),
   },
   sources = {
     { name = 'nvim_lsp' },
