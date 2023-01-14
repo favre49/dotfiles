@@ -62,5 +62,5 @@ vim.api.nvim_command("command! -bang -nargs=* Rg" ..
 -- Color scheme
 opt.termguicolors = true
 g.tokyonight_style = "night"
-cmd[[colorscheme tokyonight]]
+cmd[[colorscheme tokyonight-night]]
 
