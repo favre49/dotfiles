@@ -1,204 +1,50 @@
 snippet rmq2d
 
-// Source: ecnerwala
-// Simple-to-use multidimensional arrays
-// tensor<int,3> dp({n,n,n},INF) [Example constructor]
-// use a[{i,j,k,...}] to access
-template <typename T, int NDIMS> struct tensor_view {
-  static_assert(NDIMS >= 0, "NDIMS must be nonnegative");
-
-protected:
-  std::array<int, NDIMS> shape;
-  std::array<int, NDIMS> strides;
-  T* data;
-
-  tensor_view(std::array<int, NDIMS> shape_, std::array<int, NDIMS> strides_, T* data_) : shape(shape_), strides(strides_), data(data_) {}
-
-public:
-  tensor_view() : shape{0}, strides{0}, data(nullptr) {}
-
-protected:
-  int flatten_index(std::array<int, NDIMS> idx) const {
-    int res = 0;
-    for (int i = 0; i < NDIMS; i++) { res += idx[i] * strides[i]; }
-    return res;
-  }
-  int flatten_index_checked(std::array<int, NDIMS> idx) const {
-    int res = 0;
-    for (int i = 0; i < NDIMS; i++) {
-      assert(0 <= idx[i] && idx[i] < shape[i]);
-      res += idx[i] * strides[i];
-    }
-    return res;
-  }
-
-public:
-  T& operator[] (std::array<int, NDIMS> idx) const {
-    return data[flatten_index(idx)];
-  }
-  T& at(std::array<int, NDIMS> idx) const {
-    return data[flatten_index_checked(idx)];
-  }
-
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<T, NDIMS-1>>::type operator[] (int idx) const {
-    std::array<int, NDIMS-1> nshape; std::copy(shape.begin()+1, shape.end(), nshape.begin());
-    std::array<int, NDIMS-1> nstrides; std::copy(strides.begin()+1, strides.end(), nstrides.begin());
-    T* ndata = data + (strides[0] * idx);
-    return tensor_view<T, NDIMS-1>(nshape, nstrides, ndata);
-  }
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<T, NDIMS-1>>::type at(int idx) const {
-    assert(0 <= idx && idx < shape[0]);
-    return operator[](idx);
-  }
-
-  template <int D = NDIMS>
-  typename std::enable_if<(0 == D), T&>::type operator * () const {
-    return *data;
-  }
-
-  template <typename U, int D> friend struct tensor_view;
-  template <typename U, int D> friend struct tensor;
-};
-
-template <typename T, int NDIMS> struct tensor {
-  static_assert(NDIMS >= 0, "NDIMS must be nonnegative");
-
-protected:
-  std::array<int, NDIMS> shape;
-  std::array<int, NDIMS> strides;
-  int len;
-  T* data;
-
-public:
-  tensor() : shape{0}, strides{0}, len(0), data(nullptr) {}
-
-  explicit tensor(std::array<int, NDIMS> shape_, const T& t = T()) {
-    shape = shape_;
-    strides[NDIMS-1] = 1;
-    for (int i = NDIMS-1; i > 0; i--) {
-      strides[i-1] = strides[i] * shape[i];
-    }
-    len = strides[0] * shape[0];
-    data = new T[len];
-    std::fill(data, data + len, t);
-  }
-
-  tensor(const tensor& o) : shape(o.shape), strides(o.strides), len(o.len), data(new T[len]) {
-    for (int i = 0; i < len; i++) {
-      data[i] = o.data[i];
-    }
-  }
-
-  tensor& operator=(tensor&& o) noexcept {
-    using std::swap;
-    swap(shape, o.shape);
-    swap(strides, o.strides);
-    swap(len, o.len);
-    swap(data, o.data);
-    return *this;
-  }
-  tensor(tensor&& o) : tensor() {
-    *this = std::move(o);
-  }
-  tensor& operator=(const tensor& o) {
-    return *this = tensor(o);
-  }
-  ~tensor() { delete[] data; }
-
-  using view_t = tensor_view<T, NDIMS>;
-  view_t view() {
-    return tensor_view<T, NDIMS>(shape, strides, data);
-  }
-  operator view_t() {
-    return view();
-  }
-
-  using const_view_t = tensor_view<const T, NDIMS>;
-  const_view_t view() const {
-    return tensor_view<const T, NDIMS>(shape, strides, data);
-  }
-  operator const_view_t() const {
-    return view();
-  }
-
-  T& operator[] (std::array<int, NDIMS> idx) { return view()[idx]; }
-  T& at(std::array<int, NDIMS> idx) { return view().at(idx); }
-  const T& operator[] (std::array<int, NDIMS> idx) const { return view()[idx]; }
-  const T& at(std::array<int, NDIMS> idx) const { return view().at(idx); }
-
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<T, NDIMS-1>>::type operator[] (int idx) {
-    return view()[idx];
-  }
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<T, NDIMS-1>>::type at(int idx) {
-    return view().at(idx);
-  }
-
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<const T, NDIMS-1>>::type operator[] (int idx) const {
-    return view()[idx];
-  }
-  template <int D = NDIMS>
-  typename std::enable_if<(0 < D), tensor_view<const T, NDIMS-1>>::type at(int idx) const {
-    return view().at(idx);
-  }
-
-  template <int D = NDIMS>
-  typename std::enable_if<(0 == D), T&>::type operator * () {
-    return *view();
-  }
-  template <int D = NDIMS>
-  typename std::enable_if<(0 == D), const T&>::type operator * () const {
-    return *view();
-  }
-};
-
 // Source: Me
 // Tested on: CF 1301 E
 // 2D Sparse Table, finds MAXIMUM. Just change all max to min for MIN
-template<typename T>
+template <typename T>
 struct RMQ2D {
-  int n,m;
-  tensor<T,4> table;
+  int n, m;
+  tensor<T, 4> table;
   vector<int> logs;
 
   RMQ2D(vector<vector<T>>& matrix) {
     n = matrix.size();
     m = matrix[0].size();
-    logs.resize(max(n,m)+1);
-    int lgn = __lg(n)+1;
-    int lgm = __lg(m)+1;
-    table = tensor<T,4>({lgn,lgm,n,m});
-    for (int i = 2; i <= max(n,m); i++) {
-      logs[i] = logs[i-1];
-      if ((1<<(logs[i]+1)) == i)
-        logs[i]++;
+    logs.resize(max(n, m) + 1);
+    int lgn = __lg(n) + 1;
+    int lgm = __lg(m) + 1;
+    table = tensor<T, 4>({lgn, lgm, n, m});
+    for (int i = 2; i <= max(n, m); i++) {
+      logs[i] = logs[i - 1];
+      if ((1 << (logs[i] + 1)) == i) logs[i]++;
     }
-    for (int i =0; i < n; i++)
-      for (int j = 0; j < m; j++)
-        table[{0,0,i,j}] = matrix[i][j];
+    for (int i = 0; i < n; i++)
+      for (int j = 0; j < m; j++) table[{0, 0, i, j}] = matrix[i][j];
     for (int k = 1; k < lgn; k++)
-      for (int i = 0; i +(1<<k) <= n; i++)
+      for (int i = 0; i + (1 << k) <= n; i++)
         for (int j = 0; j < m; j++)
-          table[{k,0,i,j}] = max(table[{k-1,0,i,j}],table[{k-1,0,i+(1<<(k-1)),j}]);
+          table[{k, 0, i, j}] = max(table[{k - 1, 0, i, j}],
+                                    table[{k - 1, 0, i + (1 << (k - 1)), j}]);
     for (int l = 1; l < lgm; l++)
       for (int k = 0; k < lgn; k++)
-        for (int i = 0; i+(1<<k) <= n; i++)
-          for (int j = 0; j + (1<<l) <= m; j++)
-            table[{k,l,i,j}] = max(table[{k,l-1,i,j}],table[{k,l-1,i,j+(1<<(l-1))}]);
+        for (int i = 0; i + (1 << k) <= n; i++)
+          for (int j = 0; j + (1 << l) <= m; j++)
+            table[{k, l, i, j}] = max(table[{k, l - 1, i, j}],
+                                      table[{k, l - 1, i, j + (1 << (l - 1))}]);
   };
 
   // Query for maximum in the submatrix with top left (r1,c1) and bottom right
   // (r2,c2)
   T query(int r1, int c1, int r2, int c2) {
-    if (r2 < r1 || c2 < c1 || r1 < 0 || r2 >= n || c1 < 0 || c2 >= m) return -1e8;
-    int a = logs[(r2-r1)+1];
-    int b = logs[(c2-c1)+1];
-    return max({table[{a,b,r1,c1}],table[{a,b,r2-(1<<a)+1,c1}],table[{a,b,r1,c2-(1<<b)+1}], table[{a,b,r2-(1<<a)+1,c2-(1<<b)+1}]});
+    if (r2 < r1 || c2 < c1 || r1 < 0 || r2 >= n || c1 < 0 || c2 >= m)
+      return -1e8;
+    int a = logs[(r2 - r1) + 1];
+    int b = logs[(c2 - c1) + 1];
+    return max({table[{a, b, r1, c1}], table[{a, b, r2 - (1 << a) + 1, c1}],
+                table[{a, b, r1, c2 - (1 << b) + 1}],
+                table[{a, b, r2 - (1 << a) + 1, c2 - (1 << b) + 1}]});
   }
 };
-
 endsnippet

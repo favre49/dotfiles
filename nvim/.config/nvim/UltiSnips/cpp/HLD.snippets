@@ -1,142 +1,5 @@
 snippet hld
 
-// Source: Me
-// Tested on: CF 1641 C
-// Simple to use lazy segtree
-// Change comb, push, E and ID based on problem.
-template<class T>
-struct LazySegTree {
-  int n;
-  vector<T> t, lz;
-  T E = 0; // Identity element for segtree data
-  T ID = 0; // Identity element for lazy update
-
-  T comb(T a, T b) { // Segtree function
-    return a+b;
-  }
-  void push(int node, int l, int r) { // Propagation
-    t[node] += (r-l+1)*lz[node];
-    if (l != r) { // Propagate
-      for (int it = 0; it < 2; it++)
-        lz[2*node+it] += lz[node];
-    }
-    lz[node] = ID;
-  }
-  LazySegTree() {}
-  LazySegTree(int _n) : n(_n){
-    t.assign(4*n+5,E); lz.assign(4*n+5,ID);
-  }
-  LazySegTree(vector<T>& bld) : n(bld.size()), t(4*n+5,E), lz(4*n+5,ID) {
-    t.assign(4*n+5,E); lz.assign(4*n+5,ID);
-    build(bld,1,0,n-1);
-  }
-  void build(vector<T>& bld, int node, int tl, int tr) {
-    if (tl == tr) {
-      t[node] = bld[tl];
-    }
-    else {
-      int tm = (tl+tr)/2;
-      build(bld,2*node,tl,tm);
-      build(bld,2*node+1,tm+1,tr);
-      pull(node);
-    }
-  }
-  void pull(int node) { t[node] = comb(t[2*node], t[2*node+1]); }
-
-  void apply(int l, int r, T val) { apply(l,r,val,1,0,n-1); }
-  void apply(int l, int r, T val, int node, int tl, int tr) {
-    push(node,tl,tr);
-    if (r < tl || tr < l) return;
-    if (l <= tl && tr <= r) {
-      lz[node] = val;
-      push(node,tl,tr);
-      return;
-    }
-    int tm = (tl+tr)/2;
-    apply(l,r,val,2*node,tl,tm);
-    apply(l,r,val,2*node+1,tm+1,tr);
-    pull(node);
-  }
-
-  T query(int l, int r) {return query(l,r,1,0,n-1);}
-  T query(int l, int r, int node, int tl, int tr) {
-    push(node,tl,tr);
-    if (r < tl || tr < l) return E;
-    if (l <= tl && tr <= r) return t[node];
-    int tm = (tl+tr)/2;
-    return comb(query(l,r,2*node,tl,tm), query(l,r,2*node+1,tm+1,tr));
-  }
-
-  // first index such that f(index) is true
-  int search_first(int l, int r, const function<bool(T)>& f) {
-    return search_first(l,r,f,1,0,n-1);
-  }
-  int search_first_knowingly(const function<bool(T)>& f, int node, int tl, int tr) {
-    push(node, tl, tr);
-    if (tl == tr)
-      return tl;
-    int tm = (tl+tr)/2;
-    int res;
-    if (f(t[2*node]))
-      res = search_first_knowingly(f,2*node,tl,tm);
-    else
-      res = search_first_knowingly(f,2*node+1,tm+1,tr);
-    pull(node);
-    return res;
-  }
-  int search_first(int l, int r, const function<bool(T)>& f, int node, int tl, int tr) {
-    push(node, tl, tr);
-    if (l <= tl && tr <= r) {
-      if (!f(t[node]))
-        return -1;
-      return search_first_knowingly(f, node, tl, tr);
-    }
-    int tm = (tl+tr)/2;
-    int res = -1;
-    if (l <= tm)
-      res = search_first(l,r,f,2*node,tl,tm);
-    if (r > tm && res == -1)
-      res = search_first(l,r,f,2*node+1,tm+1,tr);
-    pull(node);
-    return res;
-  }
-
-  // last index such that f(index) is true
-  int search_last(int l, int r, const function<bool(T)>& f) {
-    return search_last(l,r,f,1,0,n-1);
-  }
-  int search_last_knowingly(const function<bool(T)>& f, int node, int tl, int tr) {
-    push(node, tl, tr);
-    if (tl == tr)
-      return tl;
-    int tm = (tl+tr)/2;
-    int res;
-    if (f(t[2*node+1]))
-      res = search_last_knowingly(f,2*node+1,tm+1,tr);
-    else
-      res = search_last_knowingly(f,2*node,tl,tm);
-    pull(node);
-    return res;
-  }
-  int search_last(int l, int r, const function<bool(T)>& f, int node, int tl, int tr) {
-    push(node, tl, tr);
-    if (l <= tl && tr <= r) {
-      if (!f(t[node]))
-        return -1;
-      return search_last_knowingly(f, node, tl, tr);
-    }
-    int tm = (tl+tr)/2;
-    int res = -1;
-    if (r > tm)
-      res = search_last(l,r,f,2*node+1,tm+1,tr);
-    if (l <= tm && res == -1)
-      res = search_last(l,r,f,2*node,tl,tm);
-    pull(node);
-    return res;
-  }
-};
-
-
 // Source: bqi343
 // Tested On: Yosupo Vertex Add Path Sum
 // Time: O(Nlog^2N)
@@ -150,8 +13,17 @@ struct HLD {
   vector<int64_t> val;
   LazySegTree<int64_t> T;
 
-  HLD(int _n, bool _usingEdge = false) : n(_n), adj(n), parent(n), root(n),
-  depth(n), sz(n), pos(n), usingEdge(_usingEdge), val(n),T(n) {}
+  HLD(int _n, bool _usingEdge = false)
+      : n(_n),
+        adj(n),
+        parent(n),
+        root(n),
+        depth(n),
+        sz(n),
+        pos(n),
+        usingEdge(_usingEdge),
+        val(n),
+        T(n) {}
 
   void add_edge(int u, int v) {
     adj[u].push_back(v);
@@ -162,12 +34,11 @@ struct HLD {
     sz[s] = 1;
     for (auto& u : adj[s]) {
       parent[u] = s;
-      depth[u] = depth[s]+1;
-      adj[u].erase(find(adj[u].begin(), adj[u].end(),s));
+      depth[u] = depth[s] + 1;
+      adj[u].erase(find(adj[u].begin(), adj[u].end(), s));
       size_dfs(u);
       sz[s] += sz[u];
-      if (sz[u] > sz[adj[s][0]])
-        swap(u,adj[s][0]);
+      if (sz[u] > sz[adj[s][0]]) swap(u, adj[s][0]);
     }
   }
 
@@ -192,30 +63,25 @@ struct HLD {
   }
 
   // Get LCA in log time
-  int lca(int u,int v) {
+  int lca(int u, int v) {
     for (; root[u] != root[v]; v = parent[root[v]])
-      if (depth[root[u]] > depth[root[v]])
-        swap(u,v);
+      if (depth[root[u]] > depth[root[v]]) swap(u, v);
     return depth[u] < depth[v] ? u : v;
   }
 
   template <class BinaryOp>
-    void process_path(int u, int v, BinaryOp op) {
-      for (; root[u] != root[v]; v = parent[root[v]]) {
-        if (depth[root[u]] > depth[root[v]])
-          swap(u,v);
-        op(pos[root[v]], pos[v]);
-      }
-      if (depth[u] > depth[v])
-        swap(u,v);
-      op(pos[u] + usingEdge, pos[v]);
+  void process_path(int u, int v, BinaryOp op) {
+    for (; root[u] != root[v]; v = parent[root[v]]) {
+      if (depth[root[u]] > depth[root[v]]) swap(u, v);
+      op(pos[root[v]], pos[v]);
     }
+    if (depth[u] > depth[v]) swap(u, v);
+    op(pos[u] + usingEdge, pos[v]);
+  }
 
   // Updates path from u to v
   void update(int u, int v, int64_t val) {
-    process_path(u,v,[this,&val](int l, int r) {
-        T.apply(l,r,val);
-    });
+    process_path(u, v, [this, &val](int l, int r) { T.apply(l, r, val); });
   }
 
   // Updates subtree of u
@@ -226,9 +92,7 @@ struct HLD {
   // Query path between u and v
   int64_t query(int u, int v) {
     int64_t res = 0;
-    process_path(u,v, [this, &res](int l, int r) {
-        res += T.query(l,r);
-    });
+    process_path(u, v, [this, &res](int l, int r) { res += T.query(l, r); });
     return res;
   }
 };

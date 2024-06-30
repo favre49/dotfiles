@@ -1,146 +1,34 @@
 snippet hull
 
-template <class T> int sgn(T x) { return (x > 0) - (x < 0); }
-
-template<class T>
-struct TPoint {
-  typedef TPoint P;
-  T x, y;
-  static constexpr T eps = static_cast<T>(1e-9);
-  explicit TPoint(T x=0, T y=0) : x(x), y(y) {}
-  bool operator<(P p) const { return tie(x,y) < tie(p.x,p.y); }
-  bool operator==(P p) const {
-    // return tie(x,y)==tie(p.x,p.y);
-    return abs(x-p.x) <= eps && abs(y-p.y) <= eps;
-  }
-  P operator+(P p) const { return P(x+p.x, y+p.y); }
-  P operator-(P p) const { return P(x-p.x, y-p.y); }
-  P operator*(T d) const { return P(x*d, y*d); }
-  P operator/(T d) const { return P(x/d, y/d); }
-  T dot(P p) const { return x*p.x + y*p.y; }
-  T cross(P p) const { return x*p.y - y*p.x; }
-  T cross(P a, P b) const { return (a-*this).cross(b-*this); }
-  T dist2() const { return x*x + y*y; }
-  double dist() const { return sqrt((double)dist2()); }
-
-  // angle to x-axis in interval [-pi, pi]
-  double angle() const { return atan2(y, x); }
-  P unit() const { return *this/dist(); } // makes dist()=1
-  P perp() const { return P(-y, x); } // rotates +90 degrees
-  P normal() const { return perp().unit(); }
-
-  // returns point rotated 'a' radians ccw around the origin
-  P rotate(double a) const {
-    return P(x*cos(a)-y*sin(a),x*sin(a)+y*cos(a)); }
-};
-
-using Point = TPoint<double>;
-
-
-template<class T>
-struct TLine {
-  typedef TLine L;
-  typedef TPoint<T> P;
-  static constexpr T eps = static_cast<T>(1e-9);
-  P a,b,ab;
-  TLine(): a(),b(),ab() {}
-  TLine(const P& a, const P& b, bool twoPoints = true): a(a),b(b),ab(twoPoints?b-a:b) {}
-  TLine(const T& xa, const T& ya, const T& xb, const T& yb):a(xa,ya),b(xb,yb),ab(xb-xa,yb-ya) {}
-  bool onLine(const P& p) {
-    if (a==b) return p==a;
-    return abs((p-a).cross(ab)) <= eps;
-  }
-  bool onSeg(const P& p) const {
-    if (a==b) return p == a;
-    auto veca = a-p, vecb = b-p;
-    return abs(veca.cross(vecb)) <= eps && veca.dot(vecb) <= eps;
-  }
-  T distLine(const P& p)
-  {
-    if (a==b) return (a-p).dist();
-    return abs((p-a).cross(ab))/ab.dist();
-  }
-  T distSeg(const P& p)
-  {
-    if ((p-a).dot(ab) <= 0) return (p-a).dist();
-    if ((p-b).dot(ab) >= 0) return (p-b).dist();
-    return distLine(p);
-  }
-  P projection(const P& p)
-  {
-    P res = a;
-    if (a == b) return a;
-    res = res + ab * ((p-a).dot(ab)/ab.dist2());
-    return res;
-  }
-  P reflection(const P& p)
-  {
-    P res = projection(p);
-    res = res*2 - p;
-    return res;
-  }
-
-  // Returns 0 if parallel or collinear
-  // returns 1 if unique intersections
-  // returns -1 if infinite intersections
-  int intersect(const L& l, P& res) const
-  {
-    if (abs(ab.cross(l.ab)) > eps) { // not parallel
-      res = l.a - (l.ab)*ab.cross(l.a-a)/(ab).cross(l.ab);
-      return 1;
-    }
-    else
-      return -(abs(ab.cross(l.a-a))<= eps || l.a == l.b);
-  }
-
-  // returns 1 if unique, stored in r1
-  // returns 2 if infinitely many, r1 and r2 are endpoints
-  // returns 0 if no intersection
-  vector<P> intersectSeg(const L& l) const
-  {
-    T oa = l.a.cross(l.b,a), ob = l.a.cross(l.b,b),
-      oc = a.cross(b,l.a), od = a.cross(b,l.b);
-    if (sgn(oa)*sgn(ob) < 0 && sgn(oc)*sgn(od) < 0)
-      return {(a*ob-b*oa)/(ob-oa)};
-    set<P> s;
-    if (l.onSeg(a)) s.insert(a);
-    if (l.onSeg(b)) s.insert(b);
-    if (onSeg(l.a)) s.insert(l.a);
-    if (onSeg(l.b)) s.insert(l.b);
-    return {s.begin(),s.end()};
-  }
-};
-
-using Line = TLine<long double>;
-
-
-template<class P>
-int sideOf(P s, P e, P p) { return sgn(s.cross(e, p)); }
+template <class P>
+int sideOf(P s, P e, P p) {
+  return sgn(s.cross(e, p));
+}
 
 // Convex hull, such that all the points are in ccw order. Points on the convex
 // hull edges are not included.
-template<class T>
+template <class T>
 struct THull {
   typedef TPoint<T> P;
   typedef TLine<T> L;
   vector<P> hull;
 
   // O(nlogn)
-  THull(vector<P> pts)  {
+  THull(vector<P> pts) {
     if (pts.size() == 1) {
       hull = pts;
       return;
     }
-    sort(pts.begin(),pts.end());
-    vector<P> h(pts.size()+1);
+    sort(pts.begin(), pts.end());
+    vector<P> h(pts.size() + 1);
     int s = 0, t = 0;
-    for (int it = 2; it--; s = --t, reverse(pts.begin(),pts.end())) {
+    for (int it = 2; it--; s = --t, reverse(pts.begin(), pts.end())) {
       for (P p : pts) {
-        while(t >= s + 2 && h[t-2].cross(h[t-1],p) <= 0) t--;
+        while (t >= s + 2 && h[t - 2].cross(h[t - 1], p) <= 0) t--;
         h[t++] = p;
       }
     }
-    hull = vector<P>(h.begin(),h.begin() + t - (t==2 && h[0] == h[1]));
+    hull = vector<P>(h.begin(), h.begin() + t - (t == 2 && h[0] == h[1]));
   }
 
   // O(logn)
@@ -148,27 +36,25 @@ struct THull {
   // Untested
   bool inHull(P p, bool strict = true) {
     int a = 1, b = (int)hull.size() - 1, r = !strict;
-    if ((int)hull.size() < 3)
-      return r && L(hull[0],hull.back()).onSeg(p);
-    if (sideOf(hull[0], hull[a],hull[b]) > 0) swap(a,b);
-    if (sideOf(hull[0],hull[a],p) >= r || sideOf(hull[0],hull[b],p) <= r)
+    if ((int)hull.size() < 3) return r && L(hull[0], hull.back()).onSeg(p);
+    if (sideOf(hull[0], hull[a], hull[b]) > 0) swap(a, b);
+    if (sideOf(hull[0], hull[a], p) >= r || sideOf(hull[0], hull[b], p) <= r)
       return false;
-    while(abs(a-b) > 1) {
-      int c = (a+b)/2;
-      (sideOf(hull[0],hull[c],p) > 0 ? b : a ) = c;
+    while (abs(a - b) > 1) {
+      int c = (a + b) / 2;
+      (sideOf(hull[0], hull[c], p) > 0 ? b : a) = c;
     }
-    return sgn(hull[a].cross(hull[b],p)) < r;
+    return sgn(hull[a].cross(hull[b], p)) < r;
   }
 
   // Find two most distant points
-  array<P,2> diameter(vector<P> S) {
+  array<P, 2> diameter(vector<P> S) {
     int n = S.size(), j = n < 2 ? 0 : 1;
-    pair<ll,array<P,2>> res({0,{S[0],S[0]}});
+    pair<ll, array<P, 2>> res({0, {S[0], S[0]}});
     for (int i = 0; i < j; i++) {
-      for (;;j = (j+1)%n) {
-        res = max(res,{(S[i]-S[j]).dist2(), {S[i]-S[j]}});
-        if ((S[(j+1)%n] - S[j]).cross(S[i+1] - S[i]) >= 0)
-          break;
+      for (;; j = (j + 1) % n) {
+        res = max(res, {(S[i] - S[j]).dist2(), {S[i] - S[j]}});
+        if ((S[(j + 1) % n] - S[j]).cross(S[i + 1] - S[i]) >= 0) break;
       }
     }
     return res.second;
