@@ -40,3 +40,14 @@ alias nnn='nnn -e -a' # Autoload preview plugin when using nnn
 # Add to path
 export PATH=$PATH:~/.bin
 export PATH=$PATH:~/compete/.scripts
+export PATH=$PATH:~/.cargo/bin
+
+# Add CUDA stuff
+export CUDA_PATH=/opt/cuda
+export PATH=$PATH:'/opt/cuda/bin'
+export PATH=$PATH:'/opt/cuda/nsight_compute'
+export PATH=$PATH:'/opt/cuda/nsight_systems/bin'
+# Set the default host compiler for nvcc. This will need to be switched back
+# and forth between the latest and previous GCC version, whatever nvcc
+# currently supports.
+export NVCC_CCBIN='/usr/bin/g++-13'
