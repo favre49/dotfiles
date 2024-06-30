@@ -8,14 +8,14 @@ dunst --config /home/lain/.config/dunst/dunstrc &
 ~/.fehbg &
 
 
-intern=eDP1
-extern=HDMI-1-0
+intern=eDP-1
+extern=DP-1-0
 
 if xrandr | grep "$extern connected"; then
-  bspc monitor HDMI-1-0 -d I II III IV
-  bspc monitor eDP1 -d V VI VII VIII
+  bspc monitor $extern -d I II III IV
+  bspc monitor $intern -d V VI VII VIII
 else
-  bspc monitor eDP1 -d I II III IV V VI VII VIII
+  bspc monitor $intern -d I II III IV V VI VII VIII
 fi
 
 
