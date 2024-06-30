@@ -43,7 +43,7 @@ color16 = #ff9e64
 color17 = #db4b4b
 
 [bar/lainbar]
-monitor = eDP1
+monitor = eDP-1
 width = 100%
 height = 18
 fixed-center = true
@@ -78,7 +78,7 @@ cursor-click = pointer
 cursor-scroll = ns-resize
 
 [bar/lainbar_external]
-monitor = HDMI-1-0
+monitor = DP-1-0
 width = 100%
 height = 18
 fixed-center = true
