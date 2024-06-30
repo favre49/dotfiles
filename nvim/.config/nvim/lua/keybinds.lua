@@ -20,7 +20,7 @@ function NvimTreeVinegarToggle()
   end
 end
 
-map('n', '<leader>t', ':lua NvimTreeVinegarToggle()<cr>', default_opts)
+map('n', '<leader>t', ':Neotree position=current<cr>', default_opts)
 
 -- Better splits
 map('n', 'ss',':split<cr><C-w>w', default_opts)

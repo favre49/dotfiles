@@ -8,11 +8,12 @@ return require('packer').startup(function()
 
   -- File Explorer
   use {
-    'kyazdani42/nvim-tree.lua',
+    "nvim-neo-tree/neo-tree.nvim",
     requires = {
-      'kyazdani42/nvim-web-devicons'
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
     },
-    config = function() require 'plugins.nvim-tree' end
   }
 
   -- Status Line
