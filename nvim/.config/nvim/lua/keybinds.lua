@@ -40,7 +40,6 @@ map('n','<C-z>','<Nop>', default_opts)
 map('n','<F1>','<Nop>', default_opts)
 map('i','<F1>','<Nop>', default_opts)
 
-
 -- Competitive related mappings
 pwd = vim.loop.cwd()
 compete_dir = vim.env.COMPETE
@@ -50,3 +49,7 @@ if (compete_dir ~= nil and string.match(pwd,compete_dir)) then
   map('n', '<leader>d', ':!make run problem_name=%< <CR>', { noremap = true })
   map('n', '<leader>r', ':!make test problem_name=%< <CR>', { noremap = true })
 end
+
+-- Laindoc support
+vim.api.nvim_set_keymap('n', 'gO', ':lua insert_laindoc_comment(true)<CR>', {noremap = true, silent = true})
+vim.api.nvim_set_keymap('n', 'go', ':lua insert_laindoc_comment(false)<CR>', {noremap = true, silent = true})
