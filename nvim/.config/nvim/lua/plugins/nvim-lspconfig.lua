@@ -26,29 +26,13 @@ local lsp_on_attach = function(client, bufnr)
   buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
   buf_set_keymap('n', '<Leader>le', '<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>', opts)
   buf_set_keymap('n', '<Leader>lq', '<cmd>lua vim.diagnostic.set_loclist()<CR>', opts)
-
-  if client.resolved_capabilities.document_formatting then
-    buf_set_keymap('n', '<Leader>lw', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
-  end
-  if client.resolved_capabilities.document_range_formatting then
-    buf_set_keymap('v', '<Leader>lw', '<cmd>lua vim.lsp.buf.range_formatting()<CR>', opts)
-  end
-
-  if client.resolved_capabilities.document_highlight then
-    vim.cmd [[
-    augroup lsp_document_highlight
-    autocmd! * <buffer>
-    autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-    autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-    ]]
-  end
 end
 
 vim.cmd [[highlight LspReferenceText cterm=bold guibg=LightYellow]]
 vim.cmd [[highlight LspReferenceRead cterm=bold ctermbg=0 guibg=LightYellow]]
 vim.cmd [[highlight LspReferenceWrite cterm=bold ctermbg=0 guibg=LightYellow]]
 
-local servers = { "clangd", "rust_analyzer", }
+local servers = { "clangd", "rust_analyzer", "jedi_language_server"}
 for _, lsp in ipairs(servers) do 
   nvim_lsp[lsp].setup {
     on_attach = lsp_on_attach,

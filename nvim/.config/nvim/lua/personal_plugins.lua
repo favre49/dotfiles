@@ -6,6 +6,7 @@ local comment_strings = {
   typescript = '//',
   cpp = '//',
   c = '//',
+  go = '//',
   rust = '//',
 }
 
@@ -58,5 +59,3 @@ end
 vim.api.nvim_create_user_command('ClearLaindoc', function()
   clear_laindoc_comments()
 end, {})
-
-

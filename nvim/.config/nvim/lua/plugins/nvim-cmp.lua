@@ -53,3 +53,6 @@ require('lspconfig')['clangd'].setup {
 require('lspconfig')['rust_analyzer'].setup {
   capabilities = capabilities
 }
+require('lspconfig')['jedi_language_server'].setup {
+  capabilities = capabilities
+}
